@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { ThemeService } from '../services/theme.service';
 
 @Component({
@@ -7,14 +8,21 @@ import { ThemeService } from '../services/theme.service';
     styleUrls: ['./nav-menu.component.css'],
     standalone: false
 })
-export class NavMenuComponent {
+export class NavMenuComponent implements OnDestroy {
   isExpanded = false;
   isDarkMode = false;
+  private themeSubscription: Subscription;
 
   constructor(private themeService: ThemeService) {
-    this.themeService.darkMode$.subscribe(isDark => {
+    this.themeSubscription = this.themeService.darkMode$.subscribe(isDark => {
       this.isDarkMode = isDark;
     });
+  }
+
+  ngOnDestroy() {
+    if (this.themeSubscription) {
+      this.themeSubscription.unsubscribe();
+    }
   }
 
   collapse() {

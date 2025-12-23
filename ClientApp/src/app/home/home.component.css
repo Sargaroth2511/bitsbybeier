@@ -1,5 +1,10 @@
+:host {
+  --hero-min-height-desktop: 200px;
+  --hero-min-height-mobile: 150px;
+}
+
 .hero-section {
-  min-height: calc(100vh - 200px);
+  min-height: calc(100vh - var(--hero-min-height-desktop));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -30,7 +35,7 @@
 /* Responsive adjustments */
 @media (max-width: 576px) {
   .hero-section {
-    min-height: calc(100vh - 150px);
+    min-height: calc(100vh - var(--hero-min-height-mobile));
     padding: 1rem 0.5rem;
   }
 

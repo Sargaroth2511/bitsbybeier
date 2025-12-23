@@ -207,7 +207,12 @@ p.lead {
 }
 
 /* Smooth transitions for theme switching */
-* {
+body,
+nav.navbar,
+a,
+.btn,
+.form-control,
+.card {
   transition-property: background-color, color, border-color;
   transition-duration: 0.3s;
   transition-timing-function: ease;
