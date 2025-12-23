@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { ThemeService } from '../services/theme.service';
 
 @Component({
     selector: 'app-nav-menu',
@@ -8,6 +9,13 @@ import { Component } from '@angular/core';
 })
 export class NavMenuComponent {
   isExpanded = false;
+  isDarkMode = false;
+
+  constructor(private themeService: ThemeService) {
+    this.themeService.darkMode$.subscribe(isDark => {
+      this.isDarkMode = isDark;
+    });
+  }
 
   collapse() {
     this.isExpanded = false;
@@ -15,5 +23,9 @@ export class NavMenuComponent {
 
   toggle() {
     this.isExpanded = !this.isExpanded;
+  }
+
+  toggleTheme() {
+    this.themeService.toggleTheme();
   }
 }

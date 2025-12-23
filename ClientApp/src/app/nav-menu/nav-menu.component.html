@@ -1,6 +1,6 @@
 <header>
   <nav
-    class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3"
+    class="navbar navbar-expand-sm navbar-toggleable-sm border-bottom box-shadow mb-3"
   >
     <div class="container">
       <a class="navbar-brand" [routerLink]="['/']">bitsbybeier</a>
@@ -19,7 +19,18 @@
         class="navbar-collapse collapse d-sm-inline-flex justify-content-end"
         [ngClass]="{ show: isExpanded }"
       >
-        <ul class="navbar-nav flex-grow"></ul>
+        <ul class="navbar-nav flex-grow">
+          <li class="nav-item">
+            <button 
+              class="btn btn-link nav-link theme-toggle" 
+              (click)="toggleTheme()"
+              [attr.aria-label]="isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'"
+              title="Toggle theme"
+            >
+              <span class="theme-icon">{{ isDarkMode ? '☀️' : '🌙' }}</span>
+            </button>
+          </li>
+        </ul>
       </div>
     </div>
   </nav>
