@@ -3,10 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "prestart": "node aspnetcore-https",
-    "start": "run-script-os",
-    "start:windows": "ng serve --port 44480 --ssl --ssl-cert \"%APPDATA%\\ASP.NET\\https\\%npm_package_name%.pem\" --ssl-key \"%APPDATA%\\ASP.NET\\https\\%npm_package_name%.key\"",
-    "start:default": "ng serve --port 44480 --ssl --ssl-cert \"$HOME/.aspnet/https/${npm_package_name}.pem\" --ssl-key \"$HOME/.aspnet/https/${npm_package_name}.key\"",
+    "start": "ng serve --port 4200 --host localhost",
     "build": "ng build",
     "build:ssr": "ng run bitsbybeier:server:dev",
     "watch": "ng build --watch --configuration development",
@@ -28,7 +25,6 @@
     "jquery": "^3.6.4",
     "oidc-client": "^1.11.5",
     "popper.js": "^1.16.0",
-    "run-script-os": "^1.1.6",
     "rxjs": "~7.8.1",
     "tslib": "^2.5.0",
     "zone.js": "~0.15.1"

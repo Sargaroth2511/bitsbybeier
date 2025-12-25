@@ -11,7 +11,7 @@
     "bitsbybeier": {
       "commandName": "Project",
       "launchBrowser": true,
-      "applicationUrl": "https://localhost:7193;http://localhost:5197",
+      "applicationUrl": "http://localhost:5197",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.SpaProxy"
