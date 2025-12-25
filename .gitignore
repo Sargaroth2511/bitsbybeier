@@ -236,3 +236,9 @@ _Pvt_Extensions
 /ClientApp/dist-server/
 /ClientApp/.angular/
 /ClientApp/.cache/
+
+# Local deployment scripts/config (do not commit)
+deploy-to-server.sh
+.env.deploy
+deploy-ssh-config
+deploy-known_hosts
