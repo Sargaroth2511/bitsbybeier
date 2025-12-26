@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface UserInfo {
   email: string;
@@ -13,6 +14,7 @@ export class AuthService {
   private tokenKey = 'auth_token';
   private userSubject = new BehaviorSubject<UserInfo | null>(null);
   public user$: Observable<UserInfo | null> = this.userSubject.asObservable();
+  private tokenValidated = false;
 
   constructor() {
     // Check if user is already logged in on initialization
@@ -24,7 +26,7 @@ export class AuthService {
 
   login(): void {
     // Redirect to backend OAuth endpoint
-    window.location.href = 'https://localhost:7140/api/auth/login';
+    window.location.href = `${environment.apiUrl}/api/auth/login`;
   }
 
   handleAuthCallback(token: string): void {
@@ -34,7 +36,7 @@ export class AuthService {
 
   private async validateToken(token: string): Promise<void> {
     try {
-      const response = await fetch('https://localhost:7140/api/auth/validate-token', {
+      const response = await fetch(`${environment.apiUrl}/api/auth/validate-token`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -45,6 +47,7 @@ export class AuthService {
       if (response.ok) {
         const user = await response.json();
         this.userSubject.next(user);
+        this.tokenValidated = true;
       } else {
         this.logout();
       }
@@ -57,6 +60,7 @@ export class AuthService {
   logout(): void {
     localStorage.removeItem(this.tokenKey);
     this.userSubject.next(null);
+    this.tokenValidated = false;
   }
 
   getToken(): string | null {
@@ -68,6 +72,6 @@ export class AuthService {
   }
 
   isAuthenticated(): boolean {
-    return this.getToken() !== null && this.userSubject.value !== null;
+    return this.getToken() !== null && this.tokenValidated && this.userSubject.value !== null;
   }
 }

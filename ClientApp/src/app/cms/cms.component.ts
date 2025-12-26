@@ -1,11 +1,18 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { AuthService, UserInfo } from '../services/auth.service';
+import { environment } from '../../environments/environment';
 
 interface Content {
   id: number;
   title: string;
   body: string;
+}
+
+interface CmsContentResponse {
+  message: string;
+  user: UserInfo;
+  content: Content[];
 }
 
 @Component({
@@ -35,7 +42,7 @@ export class CmsComponent implements OnInit {
     this.loading = true;
     this.error = null;
 
-    this.http.get<any>('https://localhost:7140/api/cms/content')
+    this.http.get<CmsContentResponse>(`${environment.apiUrl}/api/cms/content`)
       .subscribe({
         next: (response) => {
           this.content = response.content;

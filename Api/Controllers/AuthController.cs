@@ -100,7 +100,13 @@ public class AuthController : ControllerBase
             }, out SecurityToken validatedToken);
 
             var jwtToken = (JwtSecurityToken)validatedToken;
-            var email = jwtToken.Claims.First(x => x.Type == ClaimTypes.Email).Value;
+            var emailClaim = jwtToken.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email);
+            if (emailClaim == null)
+            {
+                return Unauthorized(new { message = "Email claim not found in token" });
+            }
+            
+            var email = emailClaim.Value;
             var name = jwtToken.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Name)?.Value;
 
             return Ok(new { email, name });
@@ -122,7 +128,11 @@ public class AuthController : ControllerBase
 
         var tokenHandler = new JwtSecurityTokenHandler();
         var key = Encoding.ASCII.GetBytes(jwtSecretKey);
-        var expirationMinutes = int.Parse(_configuration["Authentication:Jwt:ExpirationMinutes"] ?? "60");
+        
+        if (!int.TryParse(_configuration["Authentication:Jwt:ExpirationMinutes"], out var expirationMinutes))
+        {
+            expirationMinutes = 60; // Default to 60 minutes
+        }
 
         var claims = new List<Claim>
         {
