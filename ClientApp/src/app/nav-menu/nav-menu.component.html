@@ -20,6 +20,18 @@
         [ngClass]="{ show: isExpanded }"
       >
         <ul class="navbar-nav flex-grow">
+          <li class="nav-item" *ngIf="isAuthenticated">
+            <a class="nav-link" [routerLink]="['/cms']" (click)="collapse()">CMS</a>
+          </li>
+          <li class="nav-item" *ngIf="!isAuthenticated">
+            <a class="nav-link" [routerLink]="['/login']" (click)="collapse()">Login</a>
+          </li>
+          <li class="nav-item" *ngIf="isAuthenticated && currentUser">
+            <span class="nav-link">{{ currentUser.name }}</span>
+          </li>
+          <li class="nav-item" *ngIf="isAuthenticated">
+            <button class="btn btn-link nav-link" (click)="logout()">Logout</button>
+          </li>
           <li class="nav-item">
             <button 
               class="btn btn-link nav-link theme-toggle" 

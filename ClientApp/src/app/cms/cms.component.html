@@ -1,0 +1,30 @@
+<div class="cms-container">
+  <h1>Content Management System</h1>
+  
+  <div *ngIf="currentUser" class="user-info">
+    <p>Welcome, {{ currentUser.name }} ({{ currentUser.email }})</p>
+  </div>
+  
+  <div class="content-section">
+    <h2>Content Items</h2>
+    
+    <div *ngIf="loading" class="loading">
+      Loading content...
+    </div>
+    
+    <div *ngIf="error" class="alert alert-danger" role="alert">
+      {{ error }}
+    </div>
+    
+    <div *ngIf="!loading && !error" class="content-list">
+      <div *ngFor="let item of content" class="content-item">
+        <h3>{{ item.title }}</h3>
+        <p class="text-muted">Created: {{ item.createdAt | date:'medium' }}</p>
+      </div>
+      
+      <div *ngIf="content.length === 0" class="no-content">
+        No content available.
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,18 @@
+<div class="login-container">
+  <div class="login-card">
+    <h1>Sign In</h1>
+    <p>Sign in with your Google account to access the CMS</p>
+    
+    <div class="google-signin-container">
+      <div id="googleSignInButton"></div>
+    </div>
+    
+    <div *ngIf="loading" class="loading">
+      Authenticating...
+    </div>
+    
+    <div *ngIf="error" class="alert alert-danger" role="alert">
+      {{ error }}
+    </div>
+  </div>
+</div>

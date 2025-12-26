@@ -1,6 +1,8 @@
 import { Component, OnDestroy } from '@angular/core';
+import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ThemeService } from '../services/theme.service';
+import { AuthService, User } from '../services/auth.service';
 
 @Component({
     selector: 'app-nav-menu',
@@ -11,17 +13,30 @@ import { ThemeService } from '../services/theme.service';
 export class NavMenuComponent implements OnDestroy {
   isExpanded = false;
   isDarkMode = false;
+  currentUser: User | null = null;
   private themeSubscription: Subscription;
+  private userSubscription: Subscription;
 
-  constructor(private themeService: ThemeService) {
+  constructor(
+    private themeService: ThemeService,
+    private authService: AuthService,
+    private router: Router
+  ) {
     this.themeSubscription = this.themeService.darkMode$.subscribe(isDark => {
       this.isDarkMode = isDark;
+    });
+
+    this.userSubscription = this.authService.currentUser$.subscribe(user => {
+      this.currentUser = user;
     });
   }
 
   ngOnDestroy() {
     if (this.themeSubscription) {
       this.themeSubscription.unsubscribe();
+    }
+    if (this.userSubscription) {
+      this.userSubscription.unsubscribe();
     }
   }
 
@@ -35,5 +50,14 @@ export class NavMenuComponent implements OnDestroy {
 
   toggleTheme() {
     this.themeService.toggleTheme();
+  }
+
+  logout() {
+    this.authService.logout();
+    this.router.navigate(['/']);
+  }
+
+  get isAuthenticated(): boolean {
+    return this.authService.isAuthenticated();
   }
 }
