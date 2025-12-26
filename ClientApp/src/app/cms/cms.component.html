@@ -1,0 +1,36 @@
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Content Management System</h1>
+        <button class="btn btn-secondary" (click)="logout()">Logout</button>
+      </div>
+
+      <div *ngIf="user" class="alert alert-info">
+        <strong>Welcome, {{ user.name || user.email }}!</strong>
+        <p class="mb-0">You are authenticated and can access the CMS.</p>
+      </div>
+
+      <div *ngIf="loading" class="text-center">
+        <div class="spinner-border" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+
+      <div *ngIf="error" class="alert alert-danger">
+        {{ error }}
+      </div>
+
+      <div *ngIf="!loading && !error" class="row">
+        <div class="col-md-6 mb-3" *ngFor="let item of content">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">{{ item.title }}</h5>
+              <p class="card-text">{{ item.body }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
