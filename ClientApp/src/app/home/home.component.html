@@ -6,6 +6,19 @@
       <div class="construction-icon">
         <span role="img" aria-label="construction">🚧</span>
       </div>
+      
+      <div class="mt-4" *ngIf="!user">
+        <button class="btn btn-primary btn-lg" (click)="login()">
+          Login with Google
+        </button>
+      </div>
+      
+      <div class="mt-4" *ngIf="user">
+        <p class="mb-3">Welcome, {{ user.name || user.email }}!</p>
+        <button class="btn btn-success btn-lg" (click)="goToCms()">
+          Go to CMS
+        </button>
+      </div>
     </div>
   </div>
 </section>
