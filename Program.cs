@@ -30,7 +30,8 @@ builder.Services.AddCors(options =>
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 
 // Configure Authentication
-var jwtSecret = builder.Configuration["Authentication:Jwt:Secret"] ?? "default-secret-key-for-development-only-min-32-chars";
+var jwtSecret = builder.Configuration["Authentication:Jwt:Secret"] 
+    ?? throw new InvalidOperationException("JWT Secret must be configured. Set the Authentication:Jwt:Secret configuration value or JWT_SECRET environment variable.");
 var jwtIssuer = builder.Configuration["Authentication:Jwt:Issuer"] ?? "bitsbybeier";
 var jwtAudience = builder.Configuration["Authentication:Jwt:Audience"] ?? "bitsbybeier-app";
 

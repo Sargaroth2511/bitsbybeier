@@ -45,7 +45,9 @@ public class AuthController : ControllerBase
         }
         catch (Exception ex)
         {
-            return Unauthorized(new { message = "Authentication failed", error = ex.Message });
+            // Log the full exception for debugging (in production, use proper logging)
+            Console.Error.WriteLine($"Authentication error: {ex}");
+            return Unauthorized(new { message = "Authentication failed" });
         }
     }
 

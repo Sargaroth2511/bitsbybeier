@@ -37,7 +37,15 @@ export class AuthService {
     if (!this.isBrowser) {
       return null;
     }
-    return localStorage.getItem('jwt_token');
+    const token = localStorage.getItem('jwt_token');
+    
+    // Validate token hasn't expired
+    if (token && this.isTokenExpired(token)) {
+      this.logout();
+      return null;
+    }
+    
+    return token;
   }
 
   public isAuthenticated(): boolean {
@@ -80,13 +88,19 @@ export class AuthService {
   }
 
   private getUserFromToken(): User | null {
-    const token = this.token;
+    if (!this.isBrowser) {
+      return null;
+    }
+    
+    const token = localStorage.getItem('jwt_token');
     if (!token) {
       return null;
     }
 
     try {
-      // Decode JWT token
+      // NOTE: This is for UI display purposes only. The token payload is decoded
+      // without signature verification - the authoritative security check happens
+      // on the server side when the token is sent with API requests.
       const payload = JSON.parse(atob(token.split('.')[1]));
       return {
         email: payload.email || payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'],
@@ -94,6 +108,20 @@ export class AuthService {
       };
     } catch (e) {
       return null;
+    }
+  }
+
+  private isTokenExpired(token: string): boolean {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const exp = payload.exp;
+      if (!exp) {
+        return false;
+      }
+      // Check if token has expired (exp is in seconds, Date.now() is in milliseconds)
+      return Date.now() >= exp * 1000;
+    } catch (e) {
+      return true; // If we can't parse the token, consider it expired
     }
   }
 }

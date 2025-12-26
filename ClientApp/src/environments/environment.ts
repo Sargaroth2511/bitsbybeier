@@ -4,7 +4,9 @@
 
 export const environment = {
   production: false,
-  googleClientId: 'YOUR_GOOGLE_CLIENT_ID' // Replace with your actual Google Client ID
+  // IMPORTANT: Replace with your actual Google Client ID from Google Cloud Console
+  // Get it from: https://console.cloud.google.com/apis/credentials
+  googleClientId: '${GOOGLE_CLIENT_ID}' // e.g., '123456789-abcdefg.apps.googleusercontent.com'
 };
 
 /*
