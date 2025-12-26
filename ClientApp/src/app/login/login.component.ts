@@ -2,6 +2,7 @@ import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { isPlatformBrowser } from '@angular/common';
+import { environment } from '../../environments/environment';
 
 declare const google: any;
 
@@ -57,7 +58,7 @@ export class LoginComponent implements OnInit {
   private renderGoogleButton(): void {
     if (typeof google !== 'undefined') {
       google.accounts.id.initialize({
-        client_id: 'YOUR_GOOGLE_CLIENT_ID', // This will be replaced by environment variable
+        client_id: environment.googleClientId,
         callback: (response: any) => this.handleGoogleSignIn(response)
       });
 
