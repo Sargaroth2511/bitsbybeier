@@ -2,7 +2,9 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.EntityFrameworkCore;
 using bitsbybeier.Api.Services;
+using bitsbybeier.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +12,16 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Configure Database
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("Database connection string 'DefaultConnection' not found.");
+
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(connectionString));
+
+// Add Database Initializer
+builder.Services.AddScoped<DatabaseInitializer>();
 
 // Add CORS
 builder.Services.AddCors(options =>
@@ -64,6 +76,13 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
+// Initialize database with migrations and seed data
+using (var scope = app.Services.CreateScope())
+{
+    var initializer = scope.ServiceProvider.GetRequiredService<DatabaseInitializer>();
+    await initializer.InitializeAsync();
+}
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -77,6 +96,14 @@ else
 }
 
 app.UseHttpsRedirection();
+
+// Add Cross-Origin-Opener-Policy header for Google Sign-In compatibility
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.Append("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
+    await next();
+});
+
 app.UseStaticFiles();
 app.UseRouting();
 

@@ -9,6 +9,8 @@ declare const google: any;
 export interface User {
   email: string;
   name: string;
+  role?: string;
+  userId?: number;
 }
 
 @Injectable({
@@ -59,7 +61,9 @@ export class AuthService {
           this.setToken(response.token);
           this.currentUserSubject.next({
             email: response.email,
-            name: response.name
+            name: response.name,
+            role: response.role,
+            userId: response.userId
           });
         }
       }),
@@ -68,6 +72,24 @@ export class AuthService {
         return of(null);
       })
     );
+  }
+
+  public getUserRole(): string | null {
+    if (!this.isBrowser) {
+      return null;
+    }
+    
+    const token = localStorage.getItem('jwt_token');
+    if (!token) {
+      return null;
+    }
+
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || payload.role || null;
+    } catch (e) {
+      return null;
+    }
   }
 
   public logout(): void {

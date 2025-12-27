@@ -20,7 +20,7 @@
         [ngClass]="{ show: isExpanded }"
       >
         <ul class="navbar-nav flex-grow">
-          <li class="nav-item" *ngIf="isAuthenticated">
+          <li class="nav-item" *ngIf="isAuthenticated && isAdmin">
             <a class="nav-link" [routerLink]="['/cms']" (click)="collapse()">CMS</a>
           </li>
           <li class="nav-item" *ngIf="!isAuthenticated">

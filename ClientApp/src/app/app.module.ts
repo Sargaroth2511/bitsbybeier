@@ -10,6 +10,7 @@ import { LoginComponent } from './login/login.component';
 import { CmsComponent } from './cms/cms.component';
 
 import { AuthGuard } from './guards/auth.guard';
+import { AdminGuard } from './guards/admin.guard';
 import { JwtInterceptor } from './interceptors/jwt.interceptor';
 
 @NgModule({
@@ -26,7 +27,7 @@ import { JwtInterceptor } from './interceptors/jwt.interceptor';
     RouterModule.forRoot([
       { path: '', component: HomeComponent, pathMatch: 'full' },
       { path: 'login', component: LoginComponent },
-      { path: 'cms', component: CmsComponent, canActivate: [AuthGuard] },
+      { path: 'cms', component: CmsComponent, canActivate: [AuthGuard, AdminGuard] },
       { path: '**', redirectTo: '' },
     ]),
   ],

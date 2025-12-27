@@ -70,6 +70,11 @@
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "ssl": true,
+            "sslCert": "./.aspnet/https/aspnetapp.pem",
+            "sslKey": "./.aspnet/https/aspnetapp.key"
+          },
           "configurations": {
             "production": {
               "buildTarget": "bitsbybeier:build:production"

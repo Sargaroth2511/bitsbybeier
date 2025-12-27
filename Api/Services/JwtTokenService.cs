@@ -14,7 +14,7 @@ public class JwtTokenService : IJwtTokenService
         _configuration = configuration;
     }
 
-    public string GenerateToken(string email, string name)
+    public string GenerateToken(IEnumerable<Claim> userClaims)
     {
         var secret = _configuration["Authentication:Jwt:Secret"] ?? throw new InvalidOperationException("JWT Secret not configured");
         var issuer = _configuration["Authentication:Jwt:Issuer"] ?? "bitsbybeier";
@@ -24,11 +24,8 @@ public class JwtTokenService : IJwtTokenService
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-        var claims = new[]
+        var claims = new List<Claim>(userClaims)
         {
-            new Claim(ClaimTypes.Email, email),
-            new Claim(ClaimTypes.Name, name),
-            new Claim(JwtRegisteredClaimNames.Sub, email),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 

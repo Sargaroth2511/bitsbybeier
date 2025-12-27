@@ -14,6 +14,17 @@ const providers = [
 
 if (environment.production) {
   enableProdMode();
+  
+  // Suppress Google OAuth COOP warnings in production
+  const originalWarn = console.warn;
+  console.warn = function(...args: any[]) {
+    const message = args.join(' ');
+    if (message.includes('Cross-Origin-Opener-Policy') || 
+        message.includes('window.postMessage')) {
+      return;
+    }
+    originalWarn.apply(console, args);
+  };
 }
 
 platformBrowserDynamic(providers).bootstrapModule(AppModule, { applicationProviders: [provideZoneChangeDetection()], })

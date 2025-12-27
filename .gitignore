@@ -236,6 +236,7 @@ _Pvt_Extensions
 /ClientApp/dist-server/
 /ClientApp/.angular/
 /ClientApp/.cache/
+/ClientApp/.aspnet/
 
 # Local deployment scripts/config (do not commit)
 deploy-to-server.sh

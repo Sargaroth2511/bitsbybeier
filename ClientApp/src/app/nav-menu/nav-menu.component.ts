@@ -60,4 +60,8 @@ export class NavMenuComponent implements OnDestroy {
   get isAuthenticated(): boolean {
     return this.authService.isAuthenticated();
   }
+
+  get isAdmin(): boolean {
+    return this.authService.getUserRole() === 'Admin';
+  }
 }
