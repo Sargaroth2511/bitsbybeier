@@ -101,19 +101,26 @@ export class GoogleSignInService {
    * @returns Promise that resolves when google.accounts is available.
    */
   private waitForGoogleApi(): Promise<void> {
+    const POLLING_INTERVAL_MS = 100;
+    const MAX_WAIT_MS = 5000;
+    const maxAttempts = MAX_WAIT_MS / POLLING_INTERVAL_MS;
+
     return new Promise((resolve, reject) => {
       let attempts = 0;
-      const maxAttempts = 50; // 5 seconds max wait
-      const checkInterval = setInterval(() => {
+      
+      const checkApi = () => {
         attempts++;
+        
         if (this.isGoogleLoaded()) {
-          clearInterval(checkInterval);
           resolve();
         } else if (attempts >= maxAttempts) {
-          clearInterval(checkInterval);
           reject(new Error('Google API failed to initialize'));
+        } else {
+          setTimeout(checkApi, POLLING_INTERVAL_MS);
         }
-      }, 100);
+      };
+      
+      checkApi();
     });
   }
 }
