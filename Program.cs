@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
+using bitsbybeier.Api.Configuration;
 using bitsbybeier.Api.Services;
 using bitsbybeier.Data;
 
@@ -13,6 +14,12 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Configure Options pattern
+builder.Services.Configure<JwtOptions>(
+    builder.Configuration.GetSection(JwtOptions.SectionName));
+builder.Services.Configure<GoogleAuthOptions>(
+    builder.Configuration.GetSection(GoogleAuthOptions.SectionName));
+
 // Configure Database
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Database connection string 'DefaultConnection' not found.");
@@ -22,6 +29,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // Add Database Initializer
 builder.Services.AddScoped<DatabaseInitializer>();
+
+// Add Application Services
+builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 // Add CORS
 builder.Services.AddCors(options =>
@@ -37,9 +48,6 @@ builder.Services.AddCors(options =>
             .AllowCredentials();
     });
 });
-
-// Add JWT Token Service
-builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 
 // Configure Authentication
 var jwtSecret = builder.Configuration["Authentication:Jwt:Secret"] 

@@ -3,22 +3,48 @@ using bitsbybeier.Domain.Models;
 
 namespace bitsbybeier.Data;
 
+/// <summary>
+/// Application database context for Entity Framework Core.
+/// </summary>
 public class ApplicationDbContext : DbContext
 {
+    /// <summary>
+    /// Initializes a new instance of the ApplicationDbContext.
+    /// </summary>
+    /// <param name="options">Database context options.</param>
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
     {
     }
 
-    // Add your DbSets here as you create models
+    /// <summary>
+    /// Gets or sets the Users DbSet.
+    /// </summary>
     public DbSet<User> Users { get; set; }
+
+    /// <summary>
+    /// Gets or sets the UserImages DbSet.
+    /// </summary>
     public DbSet<UserImage> UserImages { get; set; }
 
+    /// <summary>
+    /// Configures the database model and relationships.
+    /// </summary>
+    /// <param name="modelBuilder">Model builder for entity configuration.</param>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
         
-        // Configure User entity
+        ConfigureUser(modelBuilder);
+        ConfigureUserImage(modelBuilder);
+    }
+
+    /// <summary>
+    /// Configures the User entity with properties, indexes, and relationships.
+    /// </summary>
+    /// <param name="modelBuilder">Model builder for configuration.</param>
+    private static void ConfigureUser(ModelBuilder modelBuilder)
+    {
         modelBuilder.Entity<User>(entity =>
         {
             entity.HasKey(e => e.Id);
@@ -54,14 +80,20 @@ public class ApplicationDbContext : DbContext
                 .HasForeignKey(e => e.ProfileImageId)
                 .OnDelete(DeleteBehavior.SetNull);
             
-            // Indexes for better performance
+            // Indexes for better query performance
             entity.HasIndex(e => e.Email).IsUnique();
             entity.HasIndex(e => e.GoogleId);
             entity.HasIndex(e => e.Role);
             entity.HasIndex(e => e.IsDeleted);
         });
-        
-        // Configure UserImage entity
+    }
+
+    /// <summary>
+    /// Configures the UserImage entity with properties and constraints.
+    /// </summary>
+    /// <param name="modelBuilder">Model builder for configuration.</param>
+    private static void ConfigureUserImage(ModelBuilder modelBuilder)
+    {
         modelBuilder.Entity<UserImage>(entity =>
         {
             entity.HasKey(e => e.Id);

@@ -1,24 +1,32 @@
 using Microsoft.EntityFrameworkCore;
-using bitsbybeier.Domain.Models;
 
 namespace bitsbybeier.Data;
 
+/// <summary>
+/// Service for initializing and migrating the database.
+/// </summary>
 public class DatabaseInitializer
 {
     private readonly ApplicationDbContext _context;
-    private readonly IConfiguration _configuration;
     private readonly ILogger<DatabaseInitializer> _logger;
 
+    /// <summary>
+    /// Initializes a new instance of the DatabaseInitializer.
+    /// </summary>
+    /// <param name="context">Database context.</param>
+    /// <param name="logger">Logger instance.</param>
     public DatabaseInitializer(
         ApplicationDbContext context, 
-        IConfiguration configuration,
         ILogger<DatabaseInitializer> logger)
     {
         _context = context;
-        _configuration = configuration;
         _logger = logger;
     }
 
+    /// <summary>
+    /// Applies pending database migrations and initializes the database.
+    /// </summary>
+    /// <exception cref="Exception">Thrown when database initialization fails.</exception>
     public async Task InitializeAsync()
     {
         try
