@@ -1,13 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { AuthService, User } from '../services/auth.service';
+import { AuthService } from '../services/auth.service';
+import { User } from '../models/auth.model';
+import { CmsContent } from '../models/cms.model';
+import { API_ENDPOINTS } from '../constants/api.constants';
 
-interface CmsContent {
-  id: number;
-  title: string;
-  createdAt: string;
-}
-
+/**
+ * Component for the Content Management System (CMS) interface.
+ * Accessible only to users with Admin role.
+ */
 @Component({
     selector: 'app-cms',
     templateUrl: './cms.component.html',
@@ -24,6 +25,9 @@ export class CmsComponent implements OnInit {
     private authService: AuthService
   ) {}
 
+  /**
+   * Initializes the component by subscribing to current user and loading content.
+   */
   ngOnInit(): void {
     this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
@@ -32,11 +36,14 @@ export class CmsComponent implements OnInit {
     this.loadContent();
   }
 
+  /**
+   * Loads CMS content from the API.
+   */
   loadContent(): void {
     this.loading = true;
     this.error = '';
     
-    this.http.get<CmsContent[]>('/api/cms/content').subscribe(
+    this.http.get<CmsContent[]>(API_ENDPOINTS.CMS.CONTENT).subscribe(
       data => {
         this.content = data;
         this.loading = false;

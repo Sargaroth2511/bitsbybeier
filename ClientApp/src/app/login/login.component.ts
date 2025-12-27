@@ -1,11 +1,13 @@
 import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { AuthService } from '../services/auth.service';
 import { isPlatformBrowser } from '@angular/common';
+import { AuthService } from '../services/auth.service';
+import { GoogleSignInService } from '../services/google-signin.service';
 import { environment } from '../../environments/environment';
 
-declare const google: any;
-
+/**
+ * Component for handling user login via Google Sign-In.
+ */
 @Component({
     selector: 'app-login',
     templateUrl: './login.component.html',
@@ -19,6 +21,7 @@ export class LoginComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
+    private googleSignInService: GoogleSignInService,
     private router: Router,
     private route: ActivatedRoute,
     @Inject(PLATFORM_ID) platformId: Object
@@ -31,44 +34,40 @@ export class LoginComponent implements OnInit {
     }
   }
 
+  /**
+   * Initializes the component and sets up Google Sign-In.
+   */
   ngOnInit(): void {
     // Get return url from route parameters or default to '/'
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
 
     // Initialize Google Sign-In button if in browser
     if (this.isBrowser) {
-      this.initGoogleSignIn();
+      this.initializeGoogleSignIn();
     }
   }
 
-  private initGoogleSignIn(): void {
-    // Load Google Sign-In script
-    if (typeof google === 'undefined') {
-      const script = document.createElement('script');
-      script.src = 'https://accounts.google.com/gsi/client';
-      script.async = true;
-      script.defer = true;
-      script.onload = () => this.renderGoogleButton();
-      document.head.appendChild(script);
-    } else {
-      this.renderGoogleButton();
-    }
-  }
-
-  private renderGoogleButton(): void {
-    if (typeof google !== 'undefined') {
-      google.accounts.id.initialize({
-        client_id: environment.googleClientId,
-        callback: (response: any) => this.handleGoogleSignIn(response)
-      });
-
-      google.accounts.id.renderButton(
-        document.getElementById('googleSignInButton'),
-        { theme: 'outline', size: 'large', width: 300 }
+  /**
+   * Initializes Google Sign-In and renders the button.
+   */
+  private async initializeGoogleSignIn(): Promise<void> {
+    try {
+      await this.googleSignInService.initialize();
+      this.googleSignInService.renderButton(
+        'googleSignInButton',
+        environment.googleClientId,
+        (response) => this.handleGoogleSignIn(response)
       );
+    } catch (error) {
+      console.error('Failed to initialize Google Sign-In', error);
+      this.error = 'Failed to load Google Sign-In. Please refresh the page.';
     }
   }
 
+  /**
+   * Handles the Google Sign-In response.
+   * @param response - Response from Google Sign-In containing the credential.
+   */
   private handleGoogleSignIn(response: any): void {
     this.loading = true;
     this.error = '';
