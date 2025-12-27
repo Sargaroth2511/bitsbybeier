@@ -243,3 +243,5 @@ deploy-to-server.sh
 .env.deploy
 deploy-ssh-config
 deploy-known_hosts
+efbundle
+deploy-database.sh
