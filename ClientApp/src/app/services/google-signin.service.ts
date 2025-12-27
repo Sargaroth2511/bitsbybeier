@@ -86,12 +86,34 @@ export class GoogleSignInService {
       script.defer = true;
       script.onload = () => {
         this.scriptLoaded = true;
-        resolve();
+        // Wait a short moment for Google API to initialize
+        this.waitForGoogleApi().then(resolve).catch(reject);
       };
       script.onerror = () => {
         reject(new Error('Failed to load Google Sign-In script'));
       };
       document.head.appendChild(script);
+    });
+  }
+
+  /**
+   * Waits for the Google API to be fully initialized after script load.
+   * @returns Promise that resolves when google.accounts is available.
+   */
+  private waitForGoogleApi(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      let attempts = 0;
+      const maxAttempts = 50; // 5 seconds max wait
+      const checkInterval = setInterval(() => {
+        attempts++;
+        if (this.isGoogleLoaded()) {
+          clearInterval(checkInterval);
+          resolve();
+        } else if (attempts >= maxAttempts) {
+          clearInterval(checkInterval);
+          reject(new Error('Google API failed to initialize'));
+        }
+      }, 100);
     });
   }
 }
