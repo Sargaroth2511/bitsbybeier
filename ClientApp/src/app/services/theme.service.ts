@@ -2,6 +2,10 @@ import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { BehaviorSubject, Observable } from 'rxjs';
 
+/**
+ * Service for managing application theme (light/dark mode).
+ * Persists theme preference in local storage and applies it to the document.
+ */
 @Injectable({
   providedIn: 'root'
 })
@@ -17,6 +21,10 @@ export class ThemeService {
     this.applyTheme(this.darkModeSubject.value);
   }
 
+  /**
+   * Gets the initial theme preference from localStorage or system settings.
+   * @returns True if dark mode should be enabled, false otherwise.
+   */
   private getInitialTheme(): boolean {
     if (!this.isBrowser) {
       return false;
@@ -40,6 +48,9 @@ export class ThemeService {
     }
   }
 
+  /**
+   * Toggles between light and dark theme.
+   */
   public toggleTheme(): void {
     const newValue = !this.darkModeSubject.value;
     this.darkModeSubject.next(newValue);
@@ -54,10 +65,18 @@ export class ThemeService {
     }
   }
 
+  /**
+   * Gets the current theme state.
+   * @returns True if dark mode is active, false otherwise.
+   */
   public isDarkMode(): boolean {
     return this.darkModeSubject.value;
   }
 
+  /**
+   * Applies the theme by setting the data-theme attribute on the document element.
+   * @param isDark - Whether to apply dark theme.
+   */
   private applyTheme(isDark: boolean): void {
     if (!this.isBrowser) {
       return;
