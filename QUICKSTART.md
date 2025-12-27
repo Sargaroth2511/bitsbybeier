@@ -194,6 +194,14 @@ dotnet build          # Builds both backend and frontend
        │                       │                         │
 ```
 
+## Deployment Scripts
+
+Two deployment scripts exist on the server (not in git repository):
+- `deploy-to-server.sh` - Deploys the application to production
+- `deploy-database.sh` - Manages database migrations for Development or Production environments
+
+These scripts contain server-specific configuration and are maintained separately for security reasons.
+
 ## Support
 
 For detailed documentation, see:

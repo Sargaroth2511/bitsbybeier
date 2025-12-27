@@ -16,9 +16,12 @@ DB_PASSWORD=your_secure_password_here
 # JWT Configuration
 JWT_SECRET=your-production-jwt-secret-at-least-32-characters-long
 
-# Google OAuth (if using)
+# Google OAuth
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
+
+# CORS Configuration (comma-separated list of allowed origins)
+CORS_ALLOWED_ORIGINS=https://yourdomain.com
 ```
 
 ### Setting Environment Variables
@@ -39,6 +42,7 @@ DB_PASSWORD="your_secure_password_here"
 JWT_SECRET="your-production-jwt-secret-at-least-32-characters-long"
 GOOGLE_CLIENT_ID="your-google-client-id"
 GOOGLE_CLIENT_SECRET="your-google-client-secret"
+CORS_ALLOWED_ORIGINS="https://yourdomain.com"
 ```
 
 Save and reload:
@@ -62,6 +66,7 @@ export DB_PASSWORD="your_secure_password_here"
 export JWT_SECRET="your-production-jwt-secret-at-least-32-characters-long"
 export GOOGLE_CLIENT_ID="your-google-client-id"
 export GOOGLE_CLIENT_SECRET="your-google-client-secret"
+export CORS_ALLOWED_ORIGINS="https://yourdomain.com"
 ```
 
 Reload:
@@ -86,6 +91,7 @@ Environment="DB_PASSWORD=your_secure_password_here"
 Environment="JWT_SECRET=your-production-jwt-secret-at-least-32-characters-long"
 Environment="GOOGLE_CLIENT_ID=your-google-client-id"
 Environment="GOOGLE_CLIENT_SECRET=your-google-client-secret"
+Environment="CORS_ALLOWED_ORIGINS=https://yourdomain.com"
 ```
 
 Reload systemd:
@@ -106,6 +112,7 @@ echo $DB_USER
 printenv | grep DB_
 printenv | grep JWT_
 printenv | grep GOOGLE_
+printenv | grep CORS_
 ```
 
 ## Database Setup on Server

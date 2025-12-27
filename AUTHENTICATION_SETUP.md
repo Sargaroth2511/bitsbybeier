@@ -63,8 +63,15 @@ export const environment = {
 The backend is configured to allow requests from:
 - `http://localhost:4200`
 - `https://localhost:4200`
+- Production domain (via environment variable)
 
-To add additional origins for production, update the `Cors:AllowedOrigins` array in `appsettings.json`.
+To add additional origins for production, set the `CORS_ALLOWED_ORIGINS` environment variable:
+
+```bash
+export CORS_ALLOWED_ORIGINS="https://yourdomain.com"
+```
+
+Or update the `Cors:AllowedOrigins` array in `appsettings.json`.
 
 ## Security Notes
 
