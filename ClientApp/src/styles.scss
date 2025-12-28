@@ -1,0 +1,167 @@
+// Main application styles
+@use '@angular/material' as mat;
+@use './themes/theme.scss';
+@use './themes/light-theme' as light;
+@use './themes/dark-theme' as dark;
+@use './themes/mixins' as mixins;
+
+/* Global Styles */
+html {
+  height: 100%;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+h1, .display-5 {
+  font-size: 2rem;
+  
+  @include mixins.respond-to(sm) {
+    font-size: 2.5rem;
+  }
+  
+  @include mixins.respond-to(md) {
+    font-size: 3rem;
+  }
+}
+
+p {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+p.lead {
+  font-size: 1.1rem;
+  
+  @include mixins.respond-to(md) {
+    font-size: 1.25rem;
+  }
+}
+
+/* Links */
+a {
+  color: var(--link-color);
+  text-decoration: none;
+  transition: color 0.2s ease;
+  
+  &:hover {
+    color: var(--link-hover);
+    text-decoration: underline;
+  }
+}
+
+/* Code */
+code {
+  color: var(--code-color);
+  padding: 0.2rem 0.4rem;
+  background-color: var(--code-bg);
+  border-radius: 0.25rem;
+  font-size: 87.5%;
+  font-family: 'Monaco', 'Courier New', monospace;
+}
+
+/* Container */
+.container {
+  @include mixins.container();
+}
+
+/* Responsive padding and spacing */
+.py-5 {
+  padding-top: 2rem !important;
+  padding-bottom: 2rem !important;
+  
+  @include mixins.respond-to(md) {
+    padding-top: 3rem !important;
+    padding-bottom: 3rem !important;
+  }
+}
+
+.mb-3 {
+  margin-bottom: 1rem !important;
+}
+
+.mb-4 {
+  margin-bottom: 1.5rem !important;
+}
+
+.text-center {
+  text-align: center !important;
+}
+
+.fw-bold {
+  font-weight: 700 !important;
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Material Design overrides for better theme integration */
+.mat-mdc-card {
+  background-color: var(--card-bg);
+  color: var(--text-color);
+}
+
+.mat-toolbar {
+  background-color: var(--navbar-bg);
+  color: var(--navbar-text);
+}
+
+.mat-mdc-form-field {
+  .mat-mdc-input-element {
+    color: var(--text-color);
+  }
+}
+
+/* Loading and error states */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  color: var(--text-secondary);
+}
+
+.alert {
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 0.25rem;
+  
+  &.alert-danger {
+    background-color: var(--error-color);
+    color: white;
+    border: 1px solid var(--error-color);
+  }
+}
+
+/* Responsive utilities */
+@include mixins.respond-to-max(sm) {
+  .text-center {
+    text-align: center !important;
+  }
+  
+  .mb-4 {
+    margin-bottom: 1rem !important;
+  }
+}

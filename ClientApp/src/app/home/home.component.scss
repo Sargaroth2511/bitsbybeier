@@ -1,3 +1,5 @@
+@use '../../themes/mixins' as mixins;
+
 :host {
   --hero-min-height-desktop: 200px;
   --hero-min-height-mobile: 150px;
@@ -14,16 +16,16 @@
 .hero-content {
   max-width: 800px;
   margin: 0 auto;
-}
 
-.hero-content h1 {
-  margin-bottom: 1rem;
-  animation: fadeInDown 0.8s ease-out;
-}
+  h1 {
+    margin-bottom: 1rem;
+    animation: fadeInDown 0.8s ease-out;
+  }
 
-.hero-content .lead {
-  margin-bottom: 2rem;
-  animation: fadeInUp 0.8s ease-out 0.2s backwards;
+  .lead {
+    margin-bottom: 2rem;
+    animation: fadeInUp 0.8s ease-out 0.2s backwards;
+  }
 }
 
 .construction-icon {
@@ -32,19 +34,21 @@
   margin-top: 2rem;
 }
 
-/* Responsive adjustments */
-@media (max-width: 576px) {
+// Responsive adjustments
+@include mixins.respond-to-max(sm) {
   .hero-section {
     min-height: calc(100vh - var(--hero-min-height-mobile));
     padding: 1rem 0.5rem;
   }
 
-  .hero-content h1 {
-    font-size: 1.75rem;
-  }
+  .hero-content {
+    h1 {
+      font-size: 1.75rem;
+    }
 
-  .hero-content .lead {
-    font-size: 1rem;
+    .lead {
+      font-size: 1rem;
+    }
   }
 
   .construction-icon {
@@ -52,7 +56,7 @@
   }
 }
 
-@media (min-width: 577px) and (max-width: 768px) {
+@include mixins.respond-to(sm) {
   .hero-content h1 {
     font-size: 2.25rem;
   }
@@ -62,7 +66,7 @@
   }
 }
 
-/* Animations */
+// Animations
 @keyframes fadeInDown {
   from {
     opacity: 0;
@@ -94,7 +98,7 @@
   }
 }
 
-/* Respect reduced motion preference */
+// Respect reduced motion preference
 @media (prefers-reduced-motion: reduce) {
   .hero-content h1,
   .hero-content .lead,
@@ -102,3 +106,4 @@
     animation: none;
   }
 }
+

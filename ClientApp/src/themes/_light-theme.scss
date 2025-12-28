@@ -1,0 +1,65 @@
+// Light theme definition
+@use '@angular/material' as mat;
+
+// Define the light theme using M3 theming
+$light-theme: mat.define-theme((
+  color: (
+    theme-type: light,
+    primary: mat.$azure-palette,
+  ),
+));
+
+// CSS variables for light theme
+:root, [data-theme="light"] {
+  // Background colors
+  --bg-color: #ffffff;
+  --surface-color: #ffffff;
+  --card-bg: #ffffff;
+  
+  // Text colors
+  --text-color: #212529;
+  --text-secondary: #6c757d;
+  --text-disabled: rgba(0, 0, 0, 0.38);
+  
+  // Primary colors
+  --primary-color: #1b6ec2;
+  --primary-hover: #1861ac;
+  --primary-light: #e3f2fd;
+  
+  // Accent colors
+  --accent-color: #e91e63;
+  --accent-hover: #d81b60;
+  
+  // Semantic colors
+  --success-color: #28a745;
+  --info-color: #17a2b8;
+  --warning-color: #ffc107;
+  --error-color: #f44336;
+  
+  // Interactive elements
+  --link-color: #0366d6;
+  --link-hover: #0056b3;
+  
+  // Borders and dividers
+  --border-color: #dee2e6;
+  --divider-color: rgba(0, 0, 0, 0.12);
+  
+  // Navbar
+  --navbar-bg: #ffffff;
+  --navbar-text: #212529;
+  
+  // Inputs
+  --input-bg: #ffffff;
+  --input-border: #ced4da;
+  --input-focus-border: #1b6ec2;
+  
+  // Shadows
+  --shadow-color: rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  
+  // Code
+  --code-color: #e01a76;
+  --code-bg: #f5f5f5;
+}

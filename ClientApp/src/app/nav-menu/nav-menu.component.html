@@ -1,49 +1,76 @@
 <header>
-  <nav
-    class="navbar navbar-expand-sm navbar-toggleable-sm border-bottom box-shadow mb-3"
-  >
-    <div class="container">
-      <a class="navbar-brand" [routerLink]="['/']">bitsbybeier</a>
-      <button
-        class="navbar-toggler"
-        type="button"
-        data-toggle="collapse"
-        data-target=".navbar-collapse"
-        aria-label="Toggle navigation"
-        [attr.aria-expanded]="isExpanded"
+  <mat-toolbar color="primary" class="navbar-toolbar">
+    <div class="toolbar-container">
+      <!-- Brand/Logo -->
+      <a mat-button class="brand-link" [routerLink]="['/']">
+        <span class="brand-text">bitsbybeier</span>
+      </a>
+
+      <!-- Spacer for mobile -->
+      <span class="toolbar-spacer"></span>
+
+      <!-- Desktop Navigation -->
+      <nav class="desktop-nav">
+        <a mat-button *ngIf="isAuthenticated && isAdmin" [routerLink]="['/cms']">
+          CMS
+        </a>
+        <a mat-button *ngIf="!isAuthenticated" [routerLink]="['/login']">
+          Login
+        </a>
+        <span class="user-name" *ngIf="isAuthenticated && currentUser">
+          {{ currentUser.name }}
+        </span>
+        <button mat-button *ngIf="isAuthenticated" (click)="logout()" aria-label="Sign out">
+          Logout
+        </button>
+        <button 
+          mat-icon-button 
+          class="theme-toggle" 
+          (click)="toggleTheme()"
+          [attr.aria-label]="isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'"
+          [title]="isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'"
+        >
+          <span class="theme-icon">{{ isDarkMode ? '☀️' : '🌙' }}</span>
+        </button>
+      </nav>
+
+      <!-- Mobile Menu Toggle -->
+      <button 
+        mat-icon-button 
+        class="mobile-menu-button" 
         (click)="toggle()"
+        [attr.aria-expanded]="isExpanded"
+        aria-label="Toggle navigation"
       >
-        <span class="navbar-toggler-icon"></span>
+        <mat-icon>{{ isExpanded ? 'close' : 'menu' }}</mat-icon>
       </button>
-      <div
-        class="navbar-collapse collapse d-sm-inline-flex justify-content-end"
-        [ngClass]="{ show: isExpanded }"
-      >
-        <ul class="navbar-nav flex-grow">
-          <li class="nav-item" *ngIf="isAuthenticated && isAdmin">
-            <a class="nav-link" [routerLink]="['/cms']" (click)="collapse()">CMS</a>
-          </li>
-          <li class="nav-item" *ngIf="!isAuthenticated">
-            <a class="nav-link" [routerLink]="['/login']" (click)="collapse()">Login</a>
-          </li>
-          <li class="nav-item" *ngIf="isAuthenticated && currentUser">
-            <span class="nav-link">{{ currentUser.name }}</span>
-          </li>
-          <li class="nav-item" *ngIf="isAuthenticated">
-            <button class="btn btn-link nav-link" (click)="logout()" role="button" aria-label="Sign out">Logout</button>
-          </li>
-          <li class="nav-item">
-            <button 
-              class="btn btn-link nav-link theme-toggle" 
-              (click)="toggleTheme()"
-              [attr.aria-label]="isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'"
-              title="Toggle theme"
-            >
-              <span class="theme-icon">{{ isDarkMode ? '☀️' : '🌙' }}</span>
-            </button>
-          </li>
-        </ul>
-      </div>
     </div>
-  </nav>
+  </mat-toolbar>
+
+  <!-- Mobile Navigation Drawer -->
+  <div class="mobile-nav" [class.mobile-nav-open]="isExpanded">
+    <nav class="mobile-nav-content">
+      <a mat-list-item *ngIf="isAuthenticated && isAdmin" [routerLink]="['/cms']" (click)="collapse()">
+        CMS
+      </a>
+      <a mat-list-item *ngIf="!isAuthenticated" [routerLink]="['/login']" (click)="collapse()">
+        Login
+      </a>
+      <div class="mobile-user-info" *ngIf="isAuthenticated && currentUser">
+        <span class="user-name">{{ currentUser.name }}</span>
+      </div>
+      <button mat-list-item *ngIf="isAuthenticated" (click)="logout(); collapse()">
+        Logout
+      </button>
+      <button 
+        mat-list-item
+        class="theme-toggle-mobile" 
+        (click)="toggleTheme()"
+        [attr.aria-label]="isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'"
+      >
+        <span class="theme-icon">{{ isDarkMode ? '☀️' : '🌙' }}</span>
+        <span class="theme-text">{{ isDarkMode ? 'Light Mode' : 'Dark Mode' }}</span>
+      </button>
+    </nav>
+  </div>
 </header>

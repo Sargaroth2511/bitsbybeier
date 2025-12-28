@@ -12,6 +12,7 @@ import { API_ENDPOINTS } from '../constants/api.constants';
 @Component({
     selector: 'app-cms',
     templateUrl: './cms.component.html',
+    styleUrls: ['./cms.component.scss'],
     standalone: false
 })
 export class CmsComponent implements OnInit {

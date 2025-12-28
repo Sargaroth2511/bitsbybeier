@@ -11,7 +11,7 @@ import { User } from '../models/auth.model';
 @Component({
     selector: 'app-nav-menu',
     templateUrl: './nav-menu.component.html',
-    styleUrls: ['./nav-menu.component.css'],
+    styleUrls: ['./nav-menu.component.scss'],
     standalone: false
 })
 export class NavMenuComponent implements OnDestroy {
