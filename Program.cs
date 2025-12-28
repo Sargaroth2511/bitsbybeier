@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
 using bitsbybeier.Api.Configuration;
 using bitsbybeier.Api.Services;
+using bitsbybeier.Api.Mcp;
 using bitsbybeier.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -33,6 +34,11 @@ builder.Services.AddScoped<DatabaseInitializer>();
 // Add Application Services
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IContentService, ContentService>();
+
+// Add MCP Server
+builder.Services.AddMcpServer()
+    .WithTools<ContentMcpTools>();
 
 // Add CORS
 builder.Services.AddCors(options =>

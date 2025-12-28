@@ -6,14 +6,29 @@ namespace bitsbybeier.Api.Models;
 public record ContentRequest
 {
     /// <summary>
+    /// Author of the content (required).
+    /// </summary>
+    public required string Author { get; init; }
+
+    /// <summary>
     /// Title of the content (required).
     /// </summary>
     public required string Title { get; init; }
 
     /// <summary>
-    /// Body content (optional).
+    /// Subtitle or summary of the content (optional).
     /// </summary>
-    public string? Body { get; init; }
+    public string? Subtitle { get; init; }
+
+    /// <summary>
+    /// Main content text, supports Markdown (required).
+    /// </summary>
+    public required string Content { get; init; }
+
+    /// <summary>
+    /// Whether the content should be created as a draft (default: true).
+    /// </summary>
+    public bool Draft { get; init; } = true;
 }
 
 /// <summary>
@@ -27,17 +42,42 @@ public record ContentResponse
     public required int Id { get; init; }
 
     /// <summary>
+    /// Author of the content.
+    /// </summary>
+    public required string Author { get; init; }
+
+    /// <summary>
     /// Content title.
     /// </summary>
     public required string Title { get; init; }
 
     /// <summary>
-    /// Content body (optional).
+    /// Subtitle or summary of the content.
     /// </summary>
-    public string? Body { get; init; }
+    public string? Subtitle { get; init; }
+
+    /// <summary>
+    /// Main content text.
+    /// </summary>
+    public required string Content { get; init; }
+
+    /// <summary>
+    /// Whether the content is in draft state.
+    /// </summary>
+    public required bool Draft { get; init; }
+
+    /// <summary>
+    /// Whether the content is active.
+    /// </summary>
+    public required bool Active { get; init; }
 
     /// <summary>
     /// Timestamp when content was created.
     /// </summary>
     public required DateTime CreatedAt { get; init; }
+
+    /// <summary>
+    /// Timestamp when content was last updated.
+    /// </summary>
+    public DateTime? UpdatedAt { get; init; }
 }

@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using bitsbybeier.Api.Models;
+using bitsbybeier.Api.Services;
+using bitsbybeier.Data;
 
 namespace bitsbybeier.Api.Controllers;
 
@@ -14,14 +17,20 @@ namespace bitsbybeier.Api.Controllers;
 public class CmsController : ControllerBase
 {
     private readonly ILogger<CmsController> _logger;
+    private readonly IContentService _contentService;
+    private readonly ApplicationDbContext _context;
 
     /// <summary>
     /// Initializes a new instance of the CmsController.
     /// </summary>
     /// <param name="logger">Logger instance.</param>
-    public CmsController(ILogger<CmsController> logger)
+    /// <param name="contentService">Content service.</param>
+    /// <param name="context">Database context.</param>
+    public CmsController(ILogger<CmsController> logger, IContentService contentService, ApplicationDbContext context)
     {
         _logger = logger;
+        _contentService = contentService;
+        _context = context;
     }
 
     /// <summary>
@@ -52,35 +61,33 @@ public class CmsController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<ContentResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public IActionResult GetContent()
+    public async Task<IActionResult> GetContent()
     {
-        // Placeholder for content management functionality
-        var content = new[]
-        {
-            new ContentResponse 
-            { 
-                Id = 1, 
-                Title = "Sample Content 1", 
-                Body = null, 
-                CreatedAt = DateTime.UtcNow.AddDays(-1) 
-            },
-            new ContentResponse 
-            { 
-                Id = 2, 
-                Title = "Sample Content 2", 
-                Body = null, 
-                CreatedAt = DateTime.UtcNow.AddDays(-2) 
-            }
-        };
+        var contents = await _context.Contents
+            .OrderByDescending(c => c.CreatedAt)
+            .ToListAsync();
 
-        _logger.LogDebug("Retrieved {Count} content items", content.Length);
-        return Ok(content);
+        var response = contents.Select(c => new ContentResponse
+        {
+            Id = c.Id,
+            Author = c.Author,
+            Title = c.Title,
+            Subtitle = c.Subtitle,
+            Content = c.ContentText,
+            Draft = c.Draft,
+            Active = c.Active,
+            CreatedAt = c.CreatedAt,
+            UpdatedAt = c.UpdatedAt
+        });
+
+        _logger.LogDebug("Retrieved {Count} content items", contents.Count);
+        return Ok(response);
     }
 
     /// <summary>
     /// Creates a new content item.
     /// </summary>
-    /// <param name="request">Content creation request with title and optional body.</param>
+    /// <param name="request">Content creation request with all required fields.</param>
     /// <returns>The created content item.</returns>
     /// <response code="201">Returns the newly created content item.</response>
     /// <response code="400">If the request data is invalid.</response>
@@ -91,23 +98,45 @@ public class CmsController : ControllerBase
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public IActionResult CreateContent([FromBody] ContentRequest request)
+    public async Task<IActionResult> CreateContent([FromBody] ContentRequest request)
     {
+        if (string.IsNullOrWhiteSpace(request.Author))
+        {
+            return BadRequest(new ErrorResponse { Message = "Author is required" });
+        }
+
         if (string.IsNullOrWhiteSpace(request.Title))
         {
             return BadRequest(new ErrorResponse { Message = "Title is required" });
         }
 
-        // Placeholder for content creation
-        var newContent = new ContentResponse
+        if (string.IsNullOrWhiteSpace(request.Content))
         {
-            Id = Random.Shared.Next(100, 999),
-            Title = request.Title,
-            Body = request.Body,
-            CreatedAt = DateTime.UtcNow
+            return BadRequest(new ErrorResponse { Message = "Content is required" });
+        }
+
+        var content = await _contentService.CreateContentAsync(
+            request.Author,
+            request.Title,
+            request.Subtitle,
+            request.Content,
+            request.Draft
+        );
+
+        var response = new ContentResponse
+        {
+            Id = content.Id,
+            Author = content.Author,
+            Title = content.Title,
+            Subtitle = content.Subtitle,
+            Content = content.ContentText,
+            Draft = content.Draft,
+            Active = content.Active,
+            CreatedAt = content.CreatedAt,
+            UpdatedAt = content.UpdatedAt
         };
 
-        _logger.LogInformation("Content created with ID {ContentId}", newContent.Id);
-        return Created($"/api/cms/content/{newContent.Id}", newContent);
+        _logger.LogInformation("Content created with ID {ContentId}", content.Id);
+        return Created($"/api/cms/content/{content.Id}", response);
     }
 }
