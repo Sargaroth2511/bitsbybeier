@@ -28,8 +28,10 @@ $breakpoints: (
 @mixin respond-to-max($breakpoint) {
   @if map.has-key($breakpoints, $breakpoint) {
     $value: map.get($breakpoints, $breakpoint);
-    @media (max-width: ($value - 1)) {
-      @content;
+    @if $value > 0 {
+      @media (max-width: ($value - 1px)) {
+        @content;
+      }
     }
   } @else {
     @warn "Invalid breakpoint: #{$breakpoint}.";
