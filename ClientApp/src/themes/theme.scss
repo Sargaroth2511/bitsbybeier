@@ -2,6 +2,7 @@
 @use '@angular/material' as mat;
 @use './light-theme' as light;
 @use './dark-theme' as dark;
+@use './material-overrides' as overrides;
 
 // Include the common styles for Angular Material
 @include mat.core();
@@ -9,11 +10,13 @@
 // Include theme styles for core and each component used in your app
 html {
   @include mat.all-component-themes(light.$light-theme);
+  @include overrides.material-component-overrides(light.$light-theme);
 }
 
 // Apply dark theme when data-theme="dark"
 html[data-theme="dark"] {
   @include mat.all-component-themes(dark.$dark-theme);
+  @include overrides.material-component-overrides(dark.$dark-theme);
 }
 
 // Ensure smooth theme transitions

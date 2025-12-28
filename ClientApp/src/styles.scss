@@ -117,23 +117,6 @@ code {
   }
 }
 
-/* Material Design overrides for better theme integration */
-.mat-mdc-card {
-  background-color: var(--card-bg);
-  color: var(--text-color);
-}
-
-.mat-toolbar {
-  background-color: var(--navbar-bg);
-  color: var(--navbar-text);
-}
-
-.mat-mdc-form-field {
-  .mat-mdc-input-element {
-    color: var(--text-color);
-  }
-}
-
 /* Loading and error states */
 .loading {
   display: flex;

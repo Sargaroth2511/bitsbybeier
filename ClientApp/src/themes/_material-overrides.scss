@@ -1,0 +1,27 @@
+// Material Design component theme overrides
+// This file contains component-specific theme customizations for Angular Material components
+// Following Angular Material best practices for component theming
+
+@use '@angular/material' as mat;
+
+// Mixin for applying Material component theme overrides
+@mixin material-component-overrides($theme) {
+  // Card component theming
+  .mat-mdc-card {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+  }
+
+  // Toolbar component theming
+  .mat-toolbar {
+    background-color: var(--navbar-bg);
+    color: var(--navbar-text);
+  }
+
+  // Form field component theming
+  .mat-mdc-form-field {
+    .mat-mdc-input-element {
+      color: var(--text-color);
+    }
+  }
+}
