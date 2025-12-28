@@ -5,6 +5,9 @@
 @use '@angular/material' as mat;
 
 // Mixin for applying Material component theme overrides
+// Note: We use CSS custom properties (--variable-name) for dynamic theme switching at runtime
+// rather than extracting colors from $theme, which allows seamless light/dark mode transitions
+// without page reload. The $theme parameter is kept for consistency with Material's theming API.
 @mixin material-component-overrides($theme) {
   // Card component theming
   .mat-mdc-card {
