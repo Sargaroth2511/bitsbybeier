@@ -174,7 +174,7 @@ The MCP server and content API are now ready for use by AI agents and programmat
 
 ---
 
-## 🔄 Recent Improvements (December 2025)
+## 🔄 Recent Improvements (December 2024)
 
 ### Code Quality and Architecture Improvements
 
