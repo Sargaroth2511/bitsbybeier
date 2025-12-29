@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
+using bitsbybeier.Data;
 
 namespace bitsbybeier.Api.Controllers;
 
 /// <summary>
 /// Base controller providing common functionality for all API controllers.
 /// </summary>
+[ApiController]
 public abstract class BaseController : ControllerBase
 {
     /// <summary>
@@ -13,12 +15,19 @@ public abstract class BaseController : ControllerBase
     protected readonly ILogger Logger;
 
     /// <summary>
+    /// Database context for data access.
+    /// </summary>
+    protected readonly ApplicationDbContext Context;
+
+    /// <summary>
     /// Initializes a new instance of the BaseController.
     /// </summary>
     /// <param name="logger">Logger instance.</param>
-    protected BaseController(ILogger logger)
+    /// <param name="context">Database context.</param>
+    protected BaseController(ILogger logger, ApplicationDbContext context)
     {
         Logger = logger;
+        Context = context;
     }
 
     /// <summary>

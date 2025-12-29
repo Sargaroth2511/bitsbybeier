@@ -11,13 +11,11 @@ namespace bitsbybeier.Api.Controllers;
 /// Controller for Content Management System (CMS) operations.
 /// Accessible only to users with Admin role.
 /// </summary>
-[ApiController]
 [Route("api/[controller]")]
 [Authorize(Roles = "Admin")]
 public class CmsController : BaseController
 {
     private readonly IContentService _contentService;
-    private readonly ApplicationDbContext _context;
 
     /// <summary>
     /// Initializes a new instance of the CmsController.
@@ -26,10 +24,9 @@ public class CmsController : BaseController
     /// <param name="contentService">Content service.</param>
     /// <param name="context">Database context.</param>
     public CmsController(ILogger<CmsController> logger, IContentService contentService, ApplicationDbContext context)
-        : base(logger)
+        : base(logger, context)
     {
         _contentService = contentService;
-        _context = context;
     }
 
     /// <summary>
@@ -62,7 +59,7 @@ public class CmsController : BaseController
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> GetContent()
     {
-        var contents = await _context.Contents
+        var contents = await Context.Contents
             .OrderByDescending(c => c.CreatedAt)
             .ToListAsync();
 
@@ -97,7 +94,7 @@ public class CmsController : BaseController
     [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
-    public async Task<IActionResult> CreateContent([FromBody] ContentRequest request)
+    public async Task<IActionResult> CreateContent(ContentRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Author))
         {
