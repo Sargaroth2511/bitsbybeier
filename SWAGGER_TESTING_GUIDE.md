@@ -97,7 +97,7 @@ The request will include your JWT token in the Authorization header automaticall
 ### 401 Unauthorized
 - Your token may have expired
 - Obtain a new token and update it in Swagger
-- Make sure you included "Bearer " prefix
+- Make sure you entered only the token (no "Bearer " prefix - Swagger adds it)
 
 ### 403 Forbidden
 - Your user doesn't have the required role (Admin)
@@ -105,9 +105,9 @@ The request will include your JWT token in the Authorization header automaticall
 - MCP and CMS endpoints require Admin role
 
 ### Token Format Error
-- Make sure you include "Bearer " prefix (with space)
+- Enter only the raw JWT token
+- Don't include "Bearer " prefix (Swagger adds it automatically)
 - Don't include quotes around the token
-- Format: `Bearer YOUR_TOKEN_HERE`
 
 ## Swagger Features
 
@@ -136,7 +136,7 @@ The API automatically validates:
 2. Copy JWT token from response
 3. Open Swagger UI at `/swagger`
 4. Click "Authorize" button
-5. Enter: `Bearer YOUR_TOKEN_HERE`
+5. Enter: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...` (just the token, no "Bearer")
 6. Click "Authorize" and "Close"
 7. Test any endpoint with "Try it out"
 8. View request/response details

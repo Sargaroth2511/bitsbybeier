@@ -24,16 +24,17 @@ builder.Services.AddSwaggerGen(options =>
     });
 
     // Configure JWT Bearer authentication for Swagger
-    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    options.AddSecurityDefinition("bearer", new OpenApiSecurityScheme
     {
-        Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token in the text input below. Example: 'Bearer 12345abcdef'",
         Name = "Authorization",
-        In = ParameterLocation.Header,
         Type = SecuritySchemeType.Http,
         Scheme = "bearer",
-        BearerFormat = "JWT"
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "JWT Authorization header using the Bearer scheme. Enter your JWT token in the text input below."
     });
 
+    // Use delegate-based security requirement for .NET 9+ compatibility
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
@@ -42,10 +43,10 @@ builder.Services.AddSwaggerGen(options =>
                 Reference = new OpenApiReference
                 {
                     Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
+                    Id = "bearer"
                 }
             },
-            new List<string>()
+            Array.Empty<string>()
         }
     });
 });
