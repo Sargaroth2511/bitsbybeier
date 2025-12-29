@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using bitsbybeier.Api.Models;
 using bitsbybeier.Data;
 using bitsbybeier.Domain.Models;
 
@@ -26,23 +27,19 @@ public class ContentService : IContentService
     /// <summary>
     /// Creates a new content item.
     /// </summary>
-    /// <param name="author">Author of the content.</param>
-    /// <param name="title">Title of the content.</param>
-    /// <param name="subtitle">Optional subtitle of the content.</param>
-    /// <param name="contentText">Main content text (supports Markdown).</param>
-    /// <param name="draft">Whether the content should be created as a draft (default: true).</param>
+    /// <param name="request">Content creation request containing all necessary fields.</param>
     /// <returns>The created content item.</returns>
-    public async Task<Content> CreateContentAsync(string author, string title, string? subtitle, string contentText, bool draft = true)
+    public async Task<Content> CreateContentAsync(ContentRequest request)
     {
-        _logger.LogInformation("Creating new content with title: {Title}, draft: {Draft}", title, draft);
+        _logger.LogInformation("Creating new content with title: {Title}, draft: {Draft}", request.Title, request.Draft);
 
         var content = new Content
         {
-            Author = author,
-            Title = title,
-            Subtitle = subtitle,
-            ContentText = contentText,
-            Draft = draft,
+            Author = request.Author,
+            Title = request.Title,
+            Subtitle = request.Subtitle,
+            ContentText = request.Content,
+            Draft = request.Draft,
             Active = true,
             CreatedAt = DateTime.UtcNow
         };

@@ -1,4 +1,5 @@
 using ModelContextProtocol.Server;
+using bitsbybeier.Api.Models;
 using bitsbybeier.Api.Services;
 
 namespace bitsbybeier.Api.Mcp;
@@ -27,25 +28,16 @@ public class ContentMcpTools
     /// Creates a new content item in the CMS. The content is created as a draft by default and will not be published immediately. 
     /// Use this tool to add new articles, blog posts, or any text-based content to the system.
     /// </summary>
-    /// <param name="author">The author name of the content</param>
-    /// <param name="title">The title of the content (required)</param>
-    /// <param name="content">The main content text. Supports Markdown formatting for rich text content.</param>
-    /// <param name="subtitle">Optional subtitle or summary of the content</param>
-    /// <param name="draft">Whether to create as draft (default: true). Draft content is not published and can be used for preview.</param>
+    /// <param name="request">Content creation request containing all necessary fields including author, title, content, optional subtitle, and draft flag.</param>
     /// <returns>A message indicating the content was created successfully with details.</returns>
     [McpServerTool]
-    public async Task<string> CreateContentAsync(
-        string author,
-        string title,
-        string content,
-        string? subtitle = null,
-        bool draft = true)
+    public async Task<string> CreateContentAsync(ContentRequest request)
     {
         try
         {
-            _logger.LogInformation("Creating content via MCP: {Title}, Draft: {Draft}", title, draft);
+            _logger.LogInformation("Creating content via MCP: {Title}, Draft: {Draft}", request.Title, request.Draft);
 
-            var createdContent = await _contentService.CreateContentAsync(author, title, subtitle, content, draft);
+            var createdContent = await _contentService.CreateContentAsync(request);
 
             var result = $"Content created successfully. ID: {createdContent.Id}, Title: {createdContent.Title}, Draft: {createdContent.Draft}, Created: {createdContent.CreatedAt:yyyy-MM-dd HH:mm:ss} UTC";
             _logger.LogInformation("Content created via MCP with ID: {ContentId}", createdContent.Id);

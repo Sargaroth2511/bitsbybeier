@@ -14,9 +14,8 @@ namespace bitsbybeier.Api.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize(Roles = "Admin")]
-public class CmsController : ControllerBase
+public class CmsController : BaseController
 {
-    private readonly ILogger<CmsController> _logger;
     private readonly IContentService _contentService;
     private readonly ApplicationDbContext _context;
 
@@ -27,8 +26,8 @@ public class CmsController : ControllerBase
     /// <param name="contentService">Content service.</param>
     /// <param name="context">Database context.</param>
     public CmsController(ILogger<CmsController> logger, IContentService contentService, ApplicationDbContext context)
+        : base(logger)
     {
-        _logger = logger;
         _contentService = contentService;
         _context = context;
     }
@@ -46,7 +45,7 @@ public class CmsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public IActionResult Get()
     {
-        _logger.LogInformation("CMS root endpoint accessed");
+        Logger.LogInformation("CMS root endpoint accessed");
         return Ok(new { message = "Welcome to the CMS", timestamp = DateTime.UtcNow });
     }
 
@@ -80,7 +79,7 @@ public class CmsController : ControllerBase
             UpdatedAt = c.UpdatedAt
         });
 
-        _logger.LogDebug("Retrieved {Count} content items", contents.Count);
+        Logger.LogDebug("Retrieved {Count} content items", contents.Count);
         return Ok(response);
     }
 
@@ -115,13 +114,7 @@ public class CmsController : ControllerBase
             return BadRequest(new ErrorResponse { Message = "Content is required" });
         }
 
-        var content = await _contentService.CreateContentAsync(
-            request.Author,
-            request.Title,
-            request.Subtitle,
-            request.Content,
-            request.Draft
-        );
+        var content = await _contentService.CreateContentAsync(request);
 
         var response = new ContentResponse
         {
@@ -136,7 +129,7 @@ public class CmsController : ControllerBase
             UpdatedAt = content.UpdatedAt
         };
 
-        _logger.LogInformation("Content created with ID {ContentId}", content.Id);
+        Logger.LogInformation("Content created with ID {ContentId}", content.Id);
         return Created($"/api/cms/content/{content.Id}", response);
     }
 }
