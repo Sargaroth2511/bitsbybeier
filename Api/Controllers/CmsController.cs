@@ -96,21 +96,6 @@ public class CmsController : BaseController
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> CreateContent(ContentRequest request)
     {
-        if (string.IsNullOrWhiteSpace(request.Author))
-        {
-            return BadRequest(new ErrorResponse { Message = "Author is required" });
-        }
-
-        if (string.IsNullOrWhiteSpace(request.Title))
-        {
-            return BadRequest(new ErrorResponse { Message = "Title is required" });
-        }
-
-        if (string.IsNullOrWhiteSpace(request.Content))
-        {
-            return BadRequest(new ErrorResponse { Message = "Content is required" });
-        }
-
         var content = await _contentService.CreateContentAsync(request);
 
         var response = new ContentResponse
