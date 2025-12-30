@@ -1,6 +1,6 @@
 # Swagger UI Testing Guide
 
-This guide shows you how to test the authenticated API endpoints using Swagger UI.
+This guide shows you how to test the authenticated API endpoints using Swagger UI with **two authentication options**: OAuth2 (simpler) or Bearer Token (manual).
 
 ## Accessing Swagger UI
 
@@ -13,19 +13,53 @@ or
 https://localhost:5001/swagger
 ```
 
-## Testing Authenticated Endpoints
+## Authentication Options
 
-### Step 1: Obtain a JWT Token
+You can authenticate using either method:
 
-First, you need to authenticate and get a JWT token. You have two options:
+### Option 1: OAuth2 Google Login (Recommended - Simpler!)
 
-#### Option A: Use Google Authentication (Recommended)
-1. Use the Angular frontend to sign in with Google
-2. The JWT token will be stored in the browser
-3. Copy the token from browser storage or network requests
+This is the easiest method - click a button and login with Google.
 
-#### Option B: Manual Authentication (if frontend not available)
-You can use tools like Postman or curl to authenticate:
+1. **Open Swagger UI** at `/swagger`
+
+2. **Click the "Authorize" button** (lock icon in the top right)
+
+3. **You'll see two authentication options**:
+   - **oauth2** (Google OAuth2) - Recommended
+   - **bearer** (Manual JWT token)
+
+4. **Click "Authorize" under oauth2** section
+
+5. **Login with Google**:
+   - You'll be redirected to Google's login page
+   - Sign in with your Google account
+   - Grant permissions when prompted (openid, profile, email)
+   
+6. **Automatically authenticated**:
+   - After successful login, you'll be redirected back to Swagger
+   - Google provides an ID token
+   - Use `/api/auth/google` endpoint to exchange it for JWT if needed
+   - All subsequent requests can use the authentication
+
+7. **Click "Close"** to return to Swagger UI
+
+8. **Test endpoints** - lock icons will appear on protected routes
+
+**Note**: For OAuth2 to work properly:
+- Make sure your Google OAuth credentials are configured
+- The redirect URI should include: `https://localhost:5001/swagger/oauth2-redirect.html`
+- Add this to your Google Cloud Console's Authorized redirect URIs
+
+### Option 2: Bearer Token (Manual)
+
+This method requires you to obtain a JWT token manually first.
+
+#### Step 2a: Obtain a JWT Token
+
+You can get a JWT token by:
+
+**Using the API directly:**
 ```bash
 curl -X POST https://localhost:5001/api/auth/google \
   -H "Content-Type: application/json" \
@@ -36,35 +70,41 @@ The response will contain a JWT token:
 ```json
 {
   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "user": {...}
+  "email": "user@example.com",
+  "name": "User Name",
+  "role": "Admin",
+  "userId": 1
 }
 ```
 
-### Step 2: Configure Swagger Authentication
+#### Step 2b: Configure Bearer Authentication
 
 1. **Open Swagger UI** at `/swagger`
 
-2. **Click the "Authorize" button** (green lock icon in the top right)
+2. **Click the "Authorize" button** (lock icon in the top right)
 
-3. **Enter your JWT token** in the "Value" field using this format:
-   ```
-   Bearer YOUR_TOKEN_HERE
-   ```
+3. **Select Bearer authentication** from the available options
+
+4. **Enter your JWT token** in the "Value" field:
+   - **Important**: Enter ONLY the JWT token, NOT "Bearer YOUR_TOKEN"
+   - Swagger automatically adds the "Bearer " prefix
    
-   Example:
+   Example - Enter this:
    ```
-   Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+   eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
    ```
 
-4. **Click "Authorize"**
+5. **Click "Authorize"** under the Bearer section
 
-5. **Click "Close"**
+6. **Click "Close"**
 
-### Step 3: Test API Endpoints
+7. **Test endpoints** - lock icons will appear on protected routes
 
-Now you can test any endpoint that requires authentication:
+## Testing API Endpoints
 
-#### Testing Content Creation (POST /api/cms/content)
+Once authenticated (using either method), you can test endpoints:
+
+### Testing Content Creation (POST /api/cms/content)
 
 1. Expand the `POST /api/cms/content` endpoint
 2. Click "Try it out"
@@ -81,9 +121,9 @@ Now you can test any endpoint that requires authentication:
 4. Click "Execute"
 5. View the response below
 
-The request will include your JWT token in the Authorization header automatically.
+The request will include your authentication automatically.
 
-#### Testing MCP Info Endpoint (GET /api/mcp/info)
+### Testing MCP Info Endpoint (GET /api/mcp/info)
 
 1. Expand the `GET /api/mcp/info` endpoint
 2. Click "Try it out"
@@ -94,12 +134,25 @@ The request will include your JWT token in the Authorization header automaticall
 
 ## Troubleshooting
 
-### 401 Unauthorized
+### OAuth2 Issues
+
+#### Redirect URI Mismatch
+- Error: "redirect_uri_mismatch"
+- Solution: Add `https://localhost:5001/swagger/oauth2-redirect.html` to Google Cloud Console > APIs & Services > Credentials > OAuth 2.0 Client IDs > Authorized redirect URIs
+
+#### OAuth2 Not Working
+- Make sure Google ClientId is configured in appsettings.json
+- Check browser console for errors
+- Verify you're using HTTPS (required by Google OAuth)
+
+### Bearer Token Issues
+
+#### 401 Unauthorized
 - Your token may have expired
 - Obtain a new token and update it in Swagger
 - Make sure you entered only the token (no "Bearer " prefix - Swagger adds it)
 
-### 403 Forbidden
+#### 403 Forbidden
 - Your user doesn't have the required role (Admin)
 - Check that your user has Admin role in the database
 - MCP and CMS endpoints require Admin role
@@ -114,7 +167,7 @@ The request will include your JWT token in the Authorization header automaticall
 ### Authorization Badge
 - Once authorized, you'll see a lock icon next to endpoints
 - Locked icon = requires authentication
-- All requests will automatically include your token
+- All requests will automatically include your authentication
 
 ### Response Codes
 - **200/201**: Success
@@ -130,16 +183,15 @@ The API automatically validates:
 - **Content**: Required, no length limit
 - **Draft**: Optional, boolean (default: true)
 
-## Example Workflow
+## Comparison: OAuth2 vs Bearer Token
 
-1. Authenticate via Google (using frontend or API)
-2. Copy JWT token from response
-3. Open Swagger UI at `/swagger`
-4. Click "Authorize" button
-5. Enter: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...` (just the token, no "Bearer")
-6. Click "Authorize" and "Close"
-7. Test any endpoint with "Try it out"
-8. View request/response details
+| Feature | OAuth2 (Recommended) | Bearer Token |
+|---------|---------------------|--------------|
+| **Ease of Use** | ⭐⭐⭐⭐⭐ Click and login | ⭐⭐⭐ Manual token copy |
+| **Setup** | Requires Google OAuth setup | No additional setup |
+| **Security** | ⭐⭐⭐⭐⭐ Industry standard | ⭐⭐⭐⭐ Secure if token protected |
+| **Token Management** | Automatic | Manual renewal |
+| **Best For** | Interactive testing | Automated testing, CI/CD |
 
 ## Security Notes
 
@@ -148,9 +200,11 @@ The API automatically validates:
 - Always use HTTPS in production
 - Never share your JWT tokens
 - Tokens are session-specific
+- OAuth2 tokens are automatically managed
 
 ## Additional Resources
 
 - JWT Documentation: https://jwt.io/
 - Swagger UI Guide: https://swagger.io/tools/swagger-ui/
+- Google OAuth2: https://developers.google.com/identity/protocols/oauth2
 - API Authentication: See `MCP_CONTENT_API_README.md`

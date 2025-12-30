@@ -23,7 +23,27 @@ builder.Services.AddSwaggerGen(options =>
         Description = "API for content management and MCP server integration"
     });
 
-    // Configure JWT Bearer authentication for Swagger
+    // Configure OAuth2 (Google) authentication for Swagger - Simpler option
+    options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.OAuth2,
+        Flows = new OpenApiOAuthFlows
+        {
+            Implicit = new OpenApiOAuthFlow
+            {
+                AuthorizationUrl = new Uri("https://accounts.google.com/o/oauth2/v2/auth"),
+                Scopes = new Dictionary<string, string>
+                {
+                    { "openid", "OpenID" },
+                    { "profile", "User Profile" },
+                    { "email", "User Email" }
+                }
+            }
+        },
+        Description = "Google OAuth2 authentication - click Authorize to login with Google"
+    });
+
+    // Configure JWT Bearer authentication for Swagger - Manual token option
     options.AddSecurityDefinition("bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -31,12 +51,23 @@ builder.Services.AddSwaggerGen(options =>
         Scheme = "bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "JWT Authorization header using the Bearer scheme. Enter your JWT token in the text input below."
+        Description = "JWT Authorization header using the Bearer scheme. Enter your JWT token in the text input below. Alternative to OAuth2 login."
     });
 
-    // Use delegate-based security requirement for .NET 9+ compatibility
+    // Add security requirement - endpoints can use either OAuth2 or Bearer
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "oauth2"
+                }
+            },
+            new[] { "openid", "profile", "email" }
+        },
         {
             new OpenApiSecurityScheme
             {
@@ -137,7 +168,19 @@ using (var scope = app.Services.CreateScope())
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "BitsbyBeier API V1");
+        
+        // Configure OAuth2 for Google authentication
+        var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
+        if (!string.IsNullOrEmpty(googleClientId))
+        {
+            options.OAuthClientId(googleClientId);
+            options.OAuthAppName("BitsbyBeier Swagger UI");
+            options.OAuthUseBasicAuthenticationWithAccessCodeGrant();
+        }
+    });
 }
 else
 {
