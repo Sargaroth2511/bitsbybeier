@@ -29,9 +29,10 @@ builder.Services.AddSwaggerGen(options =>
         Type = SecuritySchemeType.OAuth2,
         Flows = new OpenApiOAuthFlows
         {
-            Implicit = new OpenApiOAuthFlow
+            AuthorizationCode = new OpenApiOAuthFlow
             {
                 AuthorizationUrl = new Uri("https://accounts.google.com/o/oauth2/v2/auth"),
+                TokenUrl = new Uri("https://oauth2.googleapis.com/token"),
                 Scopes = new Dictionary<string, string>
                 {
                     { "openid", "OpenID" },
@@ -40,7 +41,7 @@ builder.Services.AddSwaggerGen(options =>
                 }
             }
         },
-        Description = "Google OAuth2 authentication - click Authorize to login with Google"
+        Description = "Google OAuth2 authentication with PKCE - click Authorize to login with Google"
     });
 
     // Configure JWT Bearer authentication for Swagger - Manual token option
@@ -172,13 +173,13 @@ if (app.Environment.IsDevelopment())
     {
         options.SwaggerEndpoint("/swagger/v1/swagger.json", "BitsbyBeier API V1");
         
-        // Configure OAuth2 for Google authentication
+        // Configure OAuth2 for Google authentication with PKCE
         var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
         if (!string.IsNullOrEmpty(googleClientId))
         {
             options.OAuthClientId(googleClientId);
             options.OAuthAppName("BitsbyBeier Swagger UI");
-            options.OAuthUseBasicAuthenticationWithAccessCodeGrant();
+            options.OAuthUsePkce(); // Use PKCE for better security
         }
     });
 }
