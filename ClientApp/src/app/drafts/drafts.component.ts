@@ -65,14 +65,21 @@ export class DraftsComponent implements OnInit {
 
   /**
    * Schedules a draft for future publication.
+   * TODO: Replace browser prompt with Angular Material DateTimePicker for better UX
    */
   schedulePublish(draft: CmsContent): void {
     const dateStr = prompt('Enter publication date and time (YYYY-MM-DD HH:MM):');
     if (!dateStr) return;
 
     try {
-      const publishAt = new Date(dateStr).toISOString();
-      this.cmsService.updateContent(draft.id, { publishAt }).subscribe({
+      const publishAt = new Date(dateStr);
+      // Validate the date
+      if (isNaN(publishAt.getTime())) {
+        this.snackBar.open('Invalid date format', 'Close', { duration: 3000 });
+        return;
+      }
+      
+      this.cmsService.updateContent(draft.id, { publishAt: publishAt.toISOString() }).subscribe({
         next: () => {
           this.snackBar.open('Publication scheduled successfully', 'Close', { duration: 3000 });
           this.loadDrafts();
@@ -96,6 +103,7 @@ export class DraftsComponent implements OnInit {
 
   /**
    * Deletes a draft.
+   * TODO: Replace browser confirm with MatDialog for better UX consistency
    */
   deleteDraft(draft: CmsContent): void {
     if (!confirm(`Are you sure you want to delete "${draft.title}"?`)) {
