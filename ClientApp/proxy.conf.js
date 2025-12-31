@@ -1,7 +1,7 @@
 const { env } = require('process');
 
-// Use HTTPS in development for Google OAuth compatibility
-const target = 'https://localhost:5001';
+// Use HTTP for testing
+const target = 'http://localhost:5000';
 
 const PROXY_CONFIG = [
   {
