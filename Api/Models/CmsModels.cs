@@ -88,4 +88,30 @@ public record ContentResponse
     /// Timestamp when content was last updated.
     /// </summary>
     public DateTime? UpdatedAt { get; init; }
+
+    /// <summary>
+    /// Timestamp when the content should be published.
+    /// </summary>
+    public DateTime? PublishAt { get; init; }
+}
+
+/// <summary>
+/// Request model for updating content status.
+/// </summary>
+public record ContentUpdateRequest
+{
+    /// <summary>
+    /// Whether the content should be in draft state.
+    /// </summary>
+    public bool? Draft { get; init; }
+
+    /// <summary>
+    /// Whether the content is active.
+    /// </summary>
+    public bool? Active { get; init; }
+
+    /// <summary>
+    /// Timestamp when the content should be published.
+    /// </summary>
+    public DateTime? PublishAt { get; init; }
 }

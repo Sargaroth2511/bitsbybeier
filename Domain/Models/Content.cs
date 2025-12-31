@@ -62,6 +62,12 @@ public class Content
     public string ContentText { get; set; } = string.Empty;
     
     /// <summary>
+    /// UTC timestamp when the content should be published.
+    /// If null, content can be published immediately when Draft is set to false.
+    /// </summary>
+    public DateTime? PublishAt { get; set; }
+    
+    /// <summary>
     /// Navigation property for associated images.
     /// </summary>
     public List<ContentImage> Images { get; set; } = new();

@@ -1,0 +1,79 @@
+<div class="drafts-container">
+  <h1>Draft Content Management</h1>
+  
+  <div class="admin-notice">
+    <mat-icon>admin_panel_settings</mat-icon>
+    <span>Admin Section - Only visible to administrators</span>
+  </div>
+  
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner></mat-spinner>
+    <p>Loading drafts...</p>
+  </div>
+  
+  <div *ngIf="error" class="alert alert-danger" role="alert">
+    {{ error }}
+  </div>
+  
+  <div *ngIf="!loading && !error" class="drafts-grid">
+    <div *ngFor="let draft of drafts" class="draft-card">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>{{ draft.title }}</mat-card-title>
+          <mat-card-subtitle *ngIf="draft.subtitle">{{ draft.subtitle }}</mat-card-subtitle>
+        </mat-card-header>
+        
+        <mat-card-content>
+          <div class="author-info">
+            <mat-icon>person</mat-icon>
+            <span>{{ draft.author }}</span>
+          </div>
+          
+          <div class="date-info">
+            <mat-icon>calendar_today</mat-icon>
+            <span>Created: {{ draft.createdAt | date:'medium' }}</span>
+          </div>
+          
+          <div *ngIf="draft.publishAt" class="publish-date">
+            <mat-icon>schedule</mat-icon>
+            <span>Scheduled: {{ draft.publishAt | date:'medium' }}</span>
+          </div>
+          
+          <div class="content-preview">
+            <p>{{ getPreviewText(draft.content) }}...</p>
+          </div>
+          
+          <div class="draft-badge">
+            <mat-chip-set>
+              <mat-chip color="accent" highlighted>DRAFT</mat-chip>
+            </mat-chip-set>
+          </div>
+        </mat-card-content>
+        
+        <mat-card-actions>
+          <button mat-raised-button color="primary" (click)="publishNow(draft)">
+            <mat-icon>publish</mat-icon>
+            Publish Now
+          </button>
+          <button mat-raised-button (click)="schedulePublish(draft)">
+            <mat-icon>schedule</mat-icon>
+            Schedule
+          </button>
+          <button mat-button (click)="keepAsDraft(draft)">
+            <mat-icon>save</mat-icon>
+            Keep as Draft
+          </button>
+          <button mat-button color="warn" (click)="deleteDraft(draft)">
+            <mat-icon>delete</mat-icon>
+            Delete
+          </button>
+        </mat-card-actions>
+      </mat-card>
+    </div>
+    
+    <div *ngIf="drafts.length === 0" class="no-drafts">
+      <mat-icon>inbox</mat-icon>
+      <p>No draft content available.</p>
+    </div>
+  </div>
+</div>

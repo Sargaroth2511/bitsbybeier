@@ -11,6 +11,12 @@
 
       <!-- Desktop Navigation -->
       <nav class="desktop-nav">
+        <a mat-button [routerLink]="['/blog']">
+          Blog
+        </a>
+        <a mat-button *ngIf="isAuthenticated && isAdmin" [routerLink]="['/drafts']">
+          Drafts
+        </a>
         <a mat-button *ngIf="isAuthenticated && isAdmin" [routerLink]="['/cms']">
           CMS
         </a>
@@ -50,6 +56,12 @@
   <!-- Mobile Navigation Drawer -->
   <div class="mobile-nav" [class.mobile-nav-open]="isExpanded">
     <nav class="mobile-nav-content">
+      <a mat-list-item [routerLink]="['/blog']" (click)="collapse()">
+        Blog
+      </a>
+      <a mat-list-item *ngIf="isAuthenticated && isAdmin" [routerLink]="['/drafts']" (click)="collapse()">
+        Drafts
+      </a>
       <a mat-list-item *ngIf="isAuthenticated && isAdmin" [routerLink]="['/cms']" (click)="collapse()">
         CMS
       </a>

@@ -13,12 +13,15 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatChipsModule } from '@angular/material/chips';
 
 import { AppComponent } from './app.component';
 import { HomeComponent } from './home/home.component';
 import { NavMenuComponent } from './nav-menu/nav-menu.component';
 import { LoginComponent } from './login/login.component';
 import { CmsComponent } from './cms/cms.component';
+import { DraftsComponent } from './drafts/drafts.component';
+import { BlogComponent } from './blog/blog.component';
 
 import { AuthGuard } from './guards/auth.guard';
 import { AdminGuard } from './guards/admin.guard';
@@ -31,6 +34,8 @@ import { JwtInterceptor } from './interceptors/jwt.interceptor';
     HomeComponent,
     LoginComponent,
     CmsComponent,
+    DraftsComponent,
+    BlogComponent,
   ],
   imports: [
     BrowserModule,
@@ -45,10 +50,13 @@ import { JwtInterceptor } from './interceptors/jwt.interceptor';
     MatListModule,
     MatProgressSpinnerModule,
     MatSnackBarModule,
+    MatChipsModule,
     RouterModule.forRoot([
       { path: '', component: HomeComponent, pathMatch: 'full' },
       { path: 'login', component: LoginComponent },
+      { path: 'blog', component: BlogComponent },
       { path: 'cms', component: CmsComponent, canActivate: [AuthGuard, AdminGuard] },
+      { path: 'drafts', component: DraftsComponent, canActivate: [AuthGuard, AdminGuard] },
       { path: '**', redirectTo: '' },
     ]),
   ],

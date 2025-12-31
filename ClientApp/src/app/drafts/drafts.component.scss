@@ -1,0 +1,170 @@
+.drafts-container {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+h1 {
+  margin-bottom: 1.5rem;
+  color: #333;
+}
+
+.admin-notice {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background-color: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 4px;
+  margin-bottom: 2rem;
+  color: #856404;
+}
+
+.admin-notice mat-icon {
+  color: #ffc107;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+  gap: 1rem;
+}
+
+.drafts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.draft-card {
+  height: 100%;
+}
+
+.draft-card mat-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.3s ease;
+}
+
+.draft-card mat-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+mat-card-header {
+  padding-bottom: 1rem;
+}
+
+mat-card-content {
+  flex: 1;
+  padding: 1rem 0;
+}
+
+.author-info,
+.date-info,
+.publish-date {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.author-info mat-icon,
+.date-info mat-icon,
+.publish-date mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.content-preview {
+  margin: 1rem 0;
+  padding: 1rem;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  min-height: 80px;
+}
+
+.content-preview p {
+  margin: 0;
+  color: #555;
+  line-height: 1.6;
+}
+
+.draft-badge {
+  margin-top: 1rem;
+}
+
+mat-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 1rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+mat-card-actions button {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+mat-card-actions button mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.no-drafts {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+  color: #999;
+}
+
+.no-drafts mat-icon {
+  font-size: 64px;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 1rem;
+}
+
+.alert {
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 4px;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  color: #721c24;
+}
+
+@media (max-width: 768px) {
+  .drafts-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .drafts-container {
+    padding: 1rem;
+  }
+  
+  mat-card-actions {
+    flex-direction: column;
+  }
+  
+  mat-card-actions button {
+    width: 100%;
+  }
+}

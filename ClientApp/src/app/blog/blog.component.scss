@@ -1,0 +1,164 @@
+.blog-container {
+  padding: 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.blog-header {
+  text-align: center;
+  margin-bottom: 3rem;
+  padding-bottom: 2rem;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.blog-header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.blog-header .subtitle {
+  font-size: 1.1rem;
+  color: #666;
+  margin: 0;
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+  gap: 1rem;
+}
+
+.blog-posts {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.blog-post {
+  width: 100%;
+}
+
+.blog-post mat-card {
+  transition: box-shadow 0.3s ease;
+}
+
+.blog-post mat-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+mat-card-header {
+  margin-bottom: 1rem;
+}
+
+mat-card-title {
+  font-size: 1.8rem !important;
+  margin-bottom: 0.5rem !important;
+}
+
+mat-card-subtitle {
+  font-size: 1.1rem !important;
+  color: #666 !important;
+}
+
+.post-meta {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.post-meta span {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.post-meta mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.post-content {
+  font-size: 1rem;
+  line-height: 1.8;
+  color: #444;
+}
+
+.post-content p {
+  margin: 0;
+}
+
+mat-card-actions {
+  padding: 1rem;
+  border-top: 1px solid #e0e0e0;
+}
+
+mat-card-actions button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.no-posts {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+  text-align: center;
+  color: #999;
+}
+
+.no-posts mat-icon {
+  font-size: 80px;
+  width: 80px;
+  height: 80px;
+  margin-bottom: 1rem;
+}
+
+.no-posts h2 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.5rem;
+}
+
+.no-posts p {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.alert {
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 4px;
+}
+
+.alert-danger {
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  color: #721c24;
+}
+
+@media (max-width: 768px) {
+  .blog-container {
+    padding: 1rem;
+  }
+  
+  .blog-header h1 {
+    font-size: 2rem;
+  }
+  
+  mat-card-title {
+    font-size: 1.5rem !important;
+  }
+  
+  .post-meta {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}

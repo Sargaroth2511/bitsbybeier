@@ -51,4 +51,77 @@ public class ContentService : IContentService
 
         return content;
     }
+
+    /// <summary>
+    /// Updates an existing content item's status.
+    /// </summary>
+    /// <param name="id">Content item ID.</param>
+    /// <param name="request">Update request with fields to update.</param>
+    /// <returns>The updated content item.</returns>
+    public async Task<Content> UpdateContentAsync(int id, ContentUpdateRequest request)
+    {
+        _logger.LogInformation("Updating content with ID: {ContentId}", id);
+
+        var content = await _context.Contents.FindAsync(id);
+        if (content == null)
+        {
+            throw new InvalidOperationException($"Content with ID {id} not found");
+        }
+
+        if (request.Draft.HasValue)
+        {
+            content.Draft = request.Draft.Value;
+        }
+
+        if (request.Active.HasValue)
+        {
+            content.Active = request.Active.Value;
+        }
+
+        if (request.PublishAt.HasValue)
+        {
+            content.PublishAt = request.PublishAt.Value;
+        }
+
+        content.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("Content updated successfully with ID: {ContentId}", content.Id);
+
+        return content;
+    }
+
+    /// <summary>
+    /// Deletes a content item.
+    /// </summary>
+    /// <param name="id">Content item ID.</param>
+    /// <returns>True if deleted successfully.</returns>
+    public async Task<bool> DeleteContentAsync(int id)
+    {
+        _logger.LogInformation("Deleting content with ID: {ContentId}", id);
+
+        var content = await _context.Contents.FindAsync(id);
+        if (content == null)
+        {
+            return false;
+        }
+
+        _context.Contents.Remove(content);
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("Content deleted successfully with ID: {ContentId}", id);
+
+        return true;
+    }
+
+    /// <summary>
+    /// Gets a content item by ID.
+    /// </summary>
+    /// <param name="id">Content item ID.</param>
+    /// <returns>The content item or null if not found.</returns>
+    public async Task<Content?> GetContentByIdAsync(int id)
+    {
+        return await _context.Contents.FindAsync(id);
+    }
 }
