@@ -28,6 +28,16 @@ public class ApplicationDbContext : DbContext
     public DbSet<UserImage> UserImages { get; set; }
 
     /// <summary>
+    /// Gets or sets the Content DbSet.
+    /// </summary>
+    public DbSet<Content> Contents { get; set; }
+
+    /// <summary>
+    /// Gets or sets the ContentImages DbSet.
+    /// </summary>
+    public DbSet<ContentImage> ContentImages { get; set; }
+
+    /// <summary>
     /// Configures the database model and relationships.
     /// </summary>
     /// <param name="modelBuilder">Model builder for entity configuration.</param>
@@ -37,6 +47,8 @@ public class ApplicationDbContext : DbContext
         
         ConfigureUser(modelBuilder);
         ConfigureUserImage(modelBuilder);
+        ConfigureContent(modelBuilder);
+        ConfigureContentImage(modelBuilder);
     }
 
     /// <summary>
@@ -95,6 +107,77 @@ public class ApplicationDbContext : DbContext
     private static void ConfigureUserImage(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<UserImage>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            
+            entity.Property(e => e.ImageData)
+                .IsRequired();
+            
+            entity.Property(e => e.ContentType)
+                .IsRequired()
+                .HasMaxLength(100);
+            
+            entity.Property(e => e.FileName)
+                .HasMaxLength(255);
+            
+            entity.Property(e => e.UploadedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+        });
+    }
+
+    /// <summary>
+    /// Configures the Content entity with properties, indexes, and relationships.
+    /// </summary>
+    /// <param name="modelBuilder">Model builder for configuration.</param>
+    private static void ConfigureContent(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Content>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            
+            entity.Property(e => e.Author)
+                .IsRequired()
+                .HasMaxLength(200);
+            
+            entity.Property(e => e.Title)
+                .IsRequired()
+                .HasMaxLength(500);
+            
+            entity.Property(e => e.Subtitle)
+                .HasMaxLength(1000);
+            
+            entity.Property(e => e.ContentText)
+                .IsRequired();
+            
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP");
+            
+            entity.Property(e => e.Active)
+                .HasDefaultValue(true);
+            
+            entity.Property(e => e.Draft)
+                .HasDefaultValue(true);
+            
+            // Relationship with ContentImage
+            entity.HasMany(e => e.Images)
+                .WithOne(i => i.Content)
+                .HasForeignKey(i => i.ContentId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            // Indexes for better query performance
+            entity.HasIndex(e => e.Draft);
+            entity.HasIndex(e => e.Active);
+            entity.HasIndex(e => e.CreatedAt);
+        });
+    }
+
+    /// <summary>
+    /// Configures the ContentImage entity with properties and constraints.
+    /// </summary>
+    /// <param name="modelBuilder">Model builder for configuration.</param>
+    private static void ConfigureContentImage(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<ContentImage>(entity =>
         {
             entity.HasKey(e => e.Id);
             

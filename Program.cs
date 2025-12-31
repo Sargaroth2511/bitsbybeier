@@ -3,8 +3,10 @@ using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 using bitsbybeier.Api.Configuration;
 using bitsbybeier.Api.Services;
+using bitsbybeier.Api.Mcp;
 using bitsbybeier.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,7 +14,74 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "BitsbyBeier API",
+        Version = "v1",
+        Description = "API for content management and MCP server integration"
+    });
+
+    // Configure OAuth2 (Google) authentication for Swagger - Simpler option
+    options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.OAuth2,
+        Flows = new OpenApiOAuthFlows
+        {
+            AuthorizationCode = new OpenApiOAuthFlow
+            {
+                AuthorizationUrl = new Uri("https://accounts.google.com/o/oauth2/v2/auth"),
+                TokenUrl = new Uri("https://oauth2.googleapis.com/token"),
+                Scopes = new Dictionary<string, string>
+                {
+                    { "openid", "OpenID" },
+                    { "profile", "User Profile" },
+                    { "email", "User Email" }
+                }
+            }
+        },
+        Description = "Google OAuth2 authentication with PKCE - click Authorize to login with Google"
+    });
+
+    // Configure JWT Bearer authentication for Swagger - Manual token option
+    options.AddSecurityDefinition("bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "JWT Authorization header using the Bearer scheme. Enter your JWT token in the text input below. Alternative to OAuth2 login."
+    });
+
+    // Add security requirement - endpoints can use either OAuth2 or Bearer
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "oauth2"
+                }
+            },
+            new[] { "openid", "profile", "email" }
+        },
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 
 // Configure Options pattern
 builder.Services.Configure<JwtOptions>(
@@ -33,6 +102,11 @@ builder.Services.AddScoped<DatabaseInitializer>();
 // Add Application Services
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IContentService, ContentService>();
+
+// Add MCP Server
+builder.Services.AddMcpServer()
+    .WithTools<ContentMcpTools>();
 
 // Add CORS
 builder.Services.AddCors(options =>
@@ -95,7 +169,19 @@ using (var scope = app.Services.CreateScope())
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "BitsbyBeier API V1");
+        
+        // Configure OAuth2 for Google authentication with PKCE
+        var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
+        if (!string.IsNullOrEmpty(googleClientId))
+        {
+            options.OAuthClientId(googleClientId);
+            options.OAuthAppName("BitsbyBeier Swagger UI");
+            options.OAuthUsePkce(); // Use PKCE for better security
+        }
+    });
 }
 else
 {
