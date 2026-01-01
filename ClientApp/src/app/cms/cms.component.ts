@@ -120,6 +120,23 @@ export class CmsComponent implements OnInit {
   }
 
   /**
+   * Edits existing content by loading it into the form.
+   */
+  editContent(content: CmsContent): void {
+    this.contentForm.patchValue({
+      author: content.author,
+      title: content.title,
+      subtitle: content.subtitle || '',
+      content: content.content,
+      draft: content.draft
+    });
+    this.showPreview = false;
+    // Scroll to form
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    this.snackBar.open('Content loaded for editing. Modify and save to update.', 'Close', { duration: 3000 });
+  }
+
+  /**
    * Shows content preview.
    */
   previewContent(): void {

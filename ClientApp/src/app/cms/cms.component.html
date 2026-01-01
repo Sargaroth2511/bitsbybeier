@@ -42,6 +42,40 @@
           </mat-error>
         </mat-form-field>
 
+        <!-- Markdown Help Section -->
+        <mat-card class="markdown-help">
+          <mat-card-content>
+            <h4>Markdown Formatting Guide</h4>
+            <div class="markdown-examples">
+              <div class="example-row">
+                <code># Header 1</code>
+                <span class="arrow">→</span>
+                <span class="result"><strong>Large Header</strong></span>
+              </div>
+              <div class="example-row">
+                <code>## Header 2</code>
+                <span class="arrow">→</span>
+                <span class="result"><strong>Medium Header</strong></span>
+              </div>
+              <div class="example-row">
+                <code>**bold text**</code>
+                <span class="arrow">→</span>
+                <span class="result"><strong>bold text</strong></span>
+              </div>
+              <div class="example-row">
+                <code>*italic text*</code>
+                <span class="arrow">→</span>
+                <span class="result"><em>italic text</em></span>
+              </div>
+              <div class="example-row">
+                <code>[Link text](https://example.com)</code>
+                <span class="arrow">→</span>
+                <span class="result"><a href="#">Link text</a></span>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
         <div class="form-actions">
           <mat-checkbox formControlName="draft" color="primary">
             Save as Draft
@@ -100,7 +134,7 @@
     </div>
     
     <div *ngIf="!loading && !error" class="content-list">
-      <mat-card *ngFor="let item of content" class="content-item">
+      <mat-card *ngFor="let item of content" class="content-item clickable" (click)="editContent(item)">
         <mat-card-header>
           <mat-card-title>{{ item.title }}</mat-card-title>
           <mat-card-subtitle>
@@ -114,6 +148,12 @@
             <mat-icon>calendar_today</mat-icon> {{ item.createdAt | date:'medium' }}
           </p>
         </mat-card-content>
+        <mat-card-actions>
+          <button mat-button color="primary" (click)="editContent(item); $event.stopPropagation()">
+            <mat-icon>edit</mat-icon>
+            Edit
+          </button>
+        </mat-card-actions>
       </mat-card>
       
       <div *ngIf="content.length === 0" class="no-content">
