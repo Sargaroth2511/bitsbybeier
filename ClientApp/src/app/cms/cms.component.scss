@@ -130,17 +130,20 @@
 
     .preview-article {
       padding: 1rem;
-      background-color: #f9f9f9;
+      background-color: var(--surface-color);
       border-radius: 4px;
+      max-height: none;
+      overflow: visible;
 
       h1 {
-        font-size: 2rem;
+        font-size: 1.8rem;
         margin-bottom: 0.5rem;
+        color: var(--text-color);
       }
 
       .subtitle {
         font-size: 1.1rem;
-        color: #666;
+        color: var(--text-secondary);
         margin-bottom: 1rem;
       }
 
@@ -148,7 +151,7 @@
         display: flex;
         gap: 1rem;
         margin-bottom: 1.5rem;
-        color: #666;
+        color: var(--text-secondary);
         font-size: 0.9rem;
 
         span {
@@ -166,10 +169,24 @@
 
       .content {
         line-height: 1.8;
+        color: var(--text-color);
 
         ::v-deep h1, ::v-deep h2, ::v-deep h3 {
           margin-top: 1.5rem;
           margin-bottom: 0.5rem;
+          color: var(--text-color);
+        }
+
+        ::v-deep h1 {
+          font-size: 1.8rem;
+        }
+
+        ::v-deep h2 {
+          font-size: 1.5rem;
+        }
+
+        ::v-deep h3 {
+          font-size: 1.2rem;
         }
 
         ::v-deep p {
@@ -177,7 +194,20 @@
         }
 
         ::v-deep a {
-          color: #1976d2;
+          color: var(--link-color);
+          text-decoration: none;
+
+          &:hover {
+            text-decoration: underline;
+          }
+        }
+
+        ::v-deep strong {
+          font-weight: 600;
+        }
+
+        ::v-deep em {
+          font-style: italic;
         }
       }
     }

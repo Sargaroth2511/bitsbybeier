@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { CmsContent, ContentUpdateRequest, ContentRequest } from '../models/cms.model';
+import { CmsContent, ContentUpdateRequest, ContentRequest, ContentFullUpdateRequest } from '../models/cms.model';
 import { API_ENDPOINTS } from '../constants/api.constants';
 
 /**
@@ -46,6 +46,13 @@ export class CmsService {
    */
   updateContent(id: number, request: ContentUpdateRequest): Observable<CmsContent> {
     return this.http.put<CmsContent>(`${API_ENDPOINTS.CMS.CONTENT}/${id}`, request);
+  }
+
+  /**
+   * Updates a content item with full content fields.
+   */
+  updateContentFull(id: number, request: ContentFullUpdateRequest): Observable<CmsContent> {
+    return this.http.patch<CmsContent>(`${API_ENDPOINTS.CMS.CONTENT}/${id}`, request);
   }
 
   /**

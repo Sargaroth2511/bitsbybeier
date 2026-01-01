@@ -16,9 +16,9 @@ $dark-theme: mat.define-theme((
   --surface-color: #161b22;
   --card-bg: #161b22;
   
-  // Text colors - Much brighter for better contrast
-  --text-color: #f0f6fc;
-  --text-secondary: #c9d1d9;
+  // Text colors - Even brighter for maximum contrast
+  --text-color: #ffffff;
+  --text-secondary: #e6edf3;
   --text-disabled: rgba(255, 255, 255, 0.38);
   
   // Primary colors
@@ -46,7 +46,7 @@ $dark-theme: mat.define-theme((
   
   // Navbar
   --navbar-bg: #0d1117;
-  --navbar-text: #f0f6fc;
+  --navbar-text: #ffffff;
   
   // Inputs
   --input-bg: #0d1117;
@@ -61,5 +61,5 @@ $dark-theme: mat.define-theme((
   
   // Code
   --code-color: #ff7b72;
-  --code-bg: #0d1117;
+  --code-bg: #161b22;
 }

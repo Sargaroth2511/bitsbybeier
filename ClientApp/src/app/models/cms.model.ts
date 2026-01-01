@@ -51,3 +51,23 @@ export interface ContentUpdateRequest {
   /** Timestamp when content should be published */
   publishAt?: string;
 }
+
+/**
+ * Request for full content update.
+ */
+export interface ContentFullUpdateRequest {
+  /** Author name */
+  author?: string;
+  /** Title of the content */
+  title?: string;
+  /** Subtitle */
+  subtitle?: string;
+  /** Body content */
+  content?: string;
+  /** Whether content should be in draft state */
+  draft?: boolean;
+  /** Whether content is active */
+  active?: boolean;
+  /** Timestamp when content should be published */
+  publishAt?: string;
+}

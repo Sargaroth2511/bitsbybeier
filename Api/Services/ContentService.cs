@@ -93,6 +93,66 @@ public class ContentService : IContentService
     }
 
     /// <summary>
+    /// Updates an existing content item with full content fields.
+    /// </summary>
+    /// <param name="id">Content item ID.</param>
+    /// <param name="request">Full update request with all fields to update.</param>
+    /// <returns>The updated content item.</returns>
+    public async Task<Content> UpdateContentFullAsync(int id, ContentFullUpdateRequest request)
+    {
+        _logger.LogInformation("Fully updating content with ID: {ContentId}", id);
+
+        var content = await _context.Contents.FindAsync(id);
+        if (content == null)
+        {
+            throw new InvalidOperationException($"Content with ID {id} not found");
+        }
+
+        if (!string.IsNullOrEmpty(request.Author))
+        {
+            content.Author = request.Author;
+        }
+
+        if (!string.IsNullOrEmpty(request.Title))
+        {
+            content.Title = request.Title;
+        }
+
+        if (request.Subtitle != null)
+        {
+            content.Subtitle = request.Subtitle;
+        }
+
+        if (!string.IsNullOrEmpty(request.Content))
+        {
+            content.ContentText = request.Content;
+        }
+
+        if (request.Draft.HasValue)
+        {
+            content.Draft = request.Draft.Value;
+        }
+
+        if (request.Active.HasValue)
+        {
+            content.Active = request.Active.Value;
+        }
+
+        if (request.PublishAt.HasValue)
+        {
+            content.PublishAt = request.PublishAt.Value;
+        }
+
+        content.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("Content fully updated successfully with ID: {ContentId}", content.Id);
+
+        return content;
+    }
+
+    /// <summary>
     /// Deletes a content item.
     /// </summary>
     /// <param name="id">Content item ID.</param>

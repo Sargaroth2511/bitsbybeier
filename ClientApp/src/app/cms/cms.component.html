@@ -92,7 +92,7 @@
             </button>
             <button mat-raised-button color="primary" type="submit" [disabled]="!contentForm.valid || creating">
               <mat-icon>{{ contentForm.get('draft')?.value ? 'save' : 'publish' }}</mat-icon>
-              {{ contentForm.get('draft')?.value ? 'Save as Draft' : 'Publish' }}
+              {{ editingContentId ? 'Update' : (contentForm.get('draft')?.value ? 'Save as Draft' : 'Publish') }}
             </button>
           </div>
         </div>

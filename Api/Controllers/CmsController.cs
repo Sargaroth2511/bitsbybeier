@@ -234,6 +234,53 @@ public class CmsController : BaseController
     }
 
     /// <summary>
+    /// Updates an existing content item with full content fields.
+    /// </summary>
+    /// <param name="id">Content item ID.</param>
+    /// <param name="request">Full update request with all fields to update.</param>
+    /// <returns>The updated content item.</returns>
+    /// <response code="200">Returns the updated content item.</response>
+    /// <response code="400">If the request data is invalid.</response>
+    /// <response code="401">If user is not authenticated.</response>
+    /// <response code="403">If user does not have Admin role.</response>
+    /// <response code="404">If content item not found.</response>
+    [HttpPatch("content/{id}")]
+    [ProducesResponseType(typeof(ContentResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateContentFull(int id, ContentFullUpdateRequest request)
+    {
+        try
+        {
+            var content = await _contentService.UpdateContentFullAsync(id, request);
+
+            var response = new ContentResponse
+            {
+                Id = content.Id,
+                Author = content.Author,
+                Title = content.Title,
+                Subtitle = content.Subtitle,
+                Content = content.ContentText,
+                Draft = content.Draft,
+                Active = content.Active,
+                CreatedAt = content.CreatedAt,
+                UpdatedAt = content.UpdatedAt,
+                PublishAt = content.PublishAt
+            };
+
+            Logger.LogInformation("Content fully updated with ID {ContentId}", content.Id);
+            return Ok(response);
+        }
+        catch (InvalidOperationException ex)
+        {
+            Logger.LogWarning("Content not found: {Message}", ex.Message);
+            return NotFound(new ErrorResponse { Message = ex.Message });
+        }
+    }
+
+    /// <summary>
     /// Deletes a content item.
     /// </summary>
     /// <param name="id">Content item ID.</param>

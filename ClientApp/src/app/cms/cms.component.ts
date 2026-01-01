@@ -25,6 +25,7 @@ export class CmsComponent implements OnInit {
   creating = false;
   showPreview = false;
   today = new Date();
+  editingContentId: number | null = null; // Track if we're editing
   
   contentForm: FormGroup;
 
@@ -79,7 +80,7 @@ export class CmsComponent implements OnInit {
   }
 
   /**
-   * Creates new content.
+   * Creates new content or updates existing content.
    */
   createContent(): void {
     if (this.contentForm.invalid) {
@@ -89,23 +90,52 @@ export class CmsComponent implements OnInit {
     this.creating = true;
     const formValue = this.contentForm.value;
     
-    this.cmsService.createContent(formValue).subscribe({
-      next: (response) => {
-        this.snackBar.open(
-          formValue.draft ? 'Draft saved successfully' : 'Content published successfully',
-          'Close',
-          { duration: 3000 }
-        );
-        this.resetForm();
-        this.loadContent();
-        this.creating = false;
-      },
-      error: (error) => {
-        console.error('Error creating content', error);
-        this.snackBar.open('Failed to create content', 'Close', { duration: 3000 });
-        this.creating = false;
-      }
-    });
+    if (this.editingContentId) {
+      // Update existing content with full fields
+      this.cmsService.updateContentFull(this.editingContentId, {
+        author: formValue.author,
+        title: formValue.title,
+        subtitle: formValue.subtitle,
+        content: formValue.content,
+        draft: formValue.draft,
+        active: true
+      }).subscribe({
+        next: () => {
+          this.snackBar.open(
+            formValue.draft ? 'Draft updated successfully' : 'Content updated and published',
+            'Close',
+            { duration: 3000 }
+          );
+          this.resetForm();
+          this.loadContent();
+          this.creating = false;
+        },
+        error: (error) => {
+          console.error('Error updating content', error);
+          this.snackBar.open('Failed to update content', 'Close', { duration: 3000 });
+          this.creating = false;
+        }
+      });
+    } else {
+      // Create new content
+      this.cmsService.createContent(formValue).subscribe({
+        next: (response) => {
+          this.snackBar.open(
+            formValue.draft ? 'Draft saved successfully' : 'Content published successfully',
+            'Close',
+            { duration: 3000 }
+          );
+          this.resetForm();
+          this.loadContent();
+          this.creating = false;
+        },
+        error: (error) => {
+          console.error('Error creating content', error);
+          this.snackBar.open('Failed to create content', 'Close', { duration: 3000 });
+          this.creating = false;
+        }
+      });
+    }
   }
 
   /**
@@ -117,12 +147,14 @@ export class CmsComponent implements OnInit {
       draft: true
     });
     this.showPreview = false;
+    this.editingContentId = null; // Clear editing state
   }
 
   /**
    * Edits existing content by loading it into the form.
    */
   editContent(content: CmsContent): void {
+    this.editingContentId = content.id; // Set editing state
     this.contentForm.patchValue({
       author: content.author,
       title: content.title,

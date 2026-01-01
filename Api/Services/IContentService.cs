@@ -24,6 +24,14 @@ public interface IContentService
     Task<Content> UpdateContentAsync(int id, ContentUpdateRequest request);
 
     /// <summary>
+    /// Updates an existing content item with full content fields.
+    /// </summary>
+    /// <param name="id">Content item ID.</param>
+    /// <param name="request">Full update request with all fields to update.</param>
+    /// <returns>The updated content item.</returns>
+    Task<Content> UpdateContentFullAsync(int id, ContentFullUpdateRequest request);
+
+    /// <summary>
     /// Deletes a content item.
     /// </summary>
     /// <param name="id">Content item ID.</param>
