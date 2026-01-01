@@ -88,10 +88,55 @@ mat-card-subtitle {
   font-size: 1rem;
   line-height: 1.8;
   color: #444;
+  max-height: 150px;
+  overflow: hidden;
+  position: relative;
+  transition: max-height 0.3s ease;
 }
 
-.post-content p {
-  margin: 0;
+.post-content.expanded {
+  max-height: none;
+}
+
+.post-content::v-deep h1,
+.post-content::v-deep h2,
+.post-content::v-deep h3 {
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.post-content::v-deep h1 {
+  font-size: 1.8rem;
+}
+
+.post-content::v-deep h2 {
+  font-size: 1.5rem;
+}
+
+.post-content::v-deep h3 {
+  font-size: 1.2rem;
+}
+
+.post-content::v-deep p {
+  margin: 0.5rem 0;
+}
+
+.post-content::v-deep a {
+  color: #1976d2;
+  text-decoration: none;
+}
+
+.post-content::v-deep a:hover {
+  text-decoration: underline;
+}
+
+.post-content::v-deep strong {
+  font-weight: 600;
+}
+
+.post-content::v-deep em {
+  font-style: italic;
 }
 
 mat-card-actions {

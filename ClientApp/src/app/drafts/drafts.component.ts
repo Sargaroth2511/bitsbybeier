@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { CmsService } from '../services/cms.service';
 import { CmsContent } from '../models/cms.model';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -13,13 +14,14 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     standalone: false
 })
 export class DraftsComponent implements OnInit {
-  drafts: CmsContent[] = [];
+  drafts: (CmsContent & { expanded?: boolean })[] = [];
   loading = false;
   error = '';
 
   constructor(
     private cmsService: CmsService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private sanitizer: DomSanitizer
   ) {}
 
   ngOnInit(): void {
@@ -35,7 +37,7 @@ export class DraftsComponent implements OnInit {
     
     this.cmsService.getDraftContent().subscribe({
       next: (data) => {
-        this.drafts = data;
+        this.drafts = data.map(draft => ({ ...draft, expanded: false }));
         this.loading = false;
       },
       error: (error) => {
@@ -45,6 +47,35 @@ export class DraftsComponent implements OnInit {
         this.snackBar.open('Failed to load drafts', 'Close', { duration: 3000 });
       }
     });
+  }
+
+  /**
+   * Toggles the expanded state of a draft.
+   */
+  toggleExpanded(draft: CmsContent & { expanded?: boolean }): void {
+    draft.expanded = !draft.expanded;
+  }
+
+  /**
+   * Formats content with basic markdown-to-HTML conversion.
+   */
+  formatContent(content: string): SafeHtml {
+    // Basic markdown to HTML conversion
+    let html = content
+      // Headers
+      .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+      .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+      .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+      // Bold
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      // Italic
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      // Links
+      .replace(/\[([^\]]+)\]\(([^\)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
+      // Line breaks
+      .replace(/\n/g, '<br>');
+    
+    return this.sanitizer.sanitize(1, html) || '';
   }
 
   /**
@@ -120,18 +151,5 @@ export class DraftsComponent implements OnInit {
         this.snackBar.open('Failed to delete draft', 'Close', { duration: 3000 });
       }
     });
-  }
-
-  /**
-   * Formats markdown content for preview (basic implementation).
-   */
-  getPreviewText(content: string): string {
-    // Simple markdown removal for preview
-    return content
-      .replace(/#+\s/g, '') // Remove headers
-      .replace(/\*\*/g, '') // Remove bold
-      .replace(/\*/g, '') // Remove italic
-      .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1') // Remove links
-      .substring(0, 200); // Truncate
   }
 }

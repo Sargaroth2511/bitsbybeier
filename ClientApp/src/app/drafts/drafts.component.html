@@ -15,8 +15,8 @@
     {{ error }}
   </div>
   
-  <div *ngIf="!loading && !error" class="drafts-grid">
-    <div *ngFor="let draft of drafts" class="draft-card">
+  <div *ngIf="!loading && !error" class="drafts-list">
+    <article *ngFor="let draft of drafts" class="draft-article">
       <mat-card>
         <mat-card-header>
           <mat-card-title>{{ draft.title }}</mat-card-title>
@@ -24,52 +24,60 @@
         </mat-card-header>
         
         <mat-card-content>
-          <div class="author-info">
-            <mat-icon>person</mat-icon>
-            <span>{{ draft.author }}</span>
-          </div>
-          
-          <div class="date-info">
-            <mat-icon>calendar_today</mat-icon>
-            <span>Created: {{ draft.createdAt | date:'medium' }}</span>
-          </div>
-          
-          <div *ngIf="draft.publishAt" class="publish-date">
-            <mat-icon>schedule</mat-icon>
-            <span>Scheduled: {{ draft.publishAt | date:'medium' }}</span>
-          </div>
-          
-          <div class="content-preview">
-            <p>{{ getPreviewText(draft.content) }}...</p>
-          </div>
-          
           <div class="draft-badge">
             <mat-chip-set>
               <mat-chip color="accent" highlighted>DRAFT</mat-chip>
             </mat-chip-set>
           </div>
+
+          <div class="post-meta">
+            <span class="author">
+              <mat-icon>person</mat-icon>
+              {{ draft.author }}
+            </span>
+            <span class="date">
+              <mat-icon>calendar_today</mat-icon>
+              {{ draft.createdAt | date:'mediumDate' }}
+            </span>
+            <span *ngIf="draft.publishAt" class="scheduled">
+              <mat-icon>schedule</mat-icon>
+              Scheduled: {{ draft.publishAt | date:'medium' }}
+            </span>
+          </div>
+          
+          <div class="post-content" [class.expanded]="draft.expanded">
+            <div [innerHTML]="formatContent(draft.content)"></div>
+          </div>
         </mat-card-content>
         
         <mat-card-actions>
-          <button mat-raised-button color="primary" (click)="publishNow(draft)">
-            <mat-icon>publish</mat-icon>
-            Publish Now
-          </button>
-          <button mat-raised-button (click)="schedulePublish(draft)">
-            <mat-icon>schedule</mat-icon>
-            Schedule
-          </button>
-          <button mat-button (click)="keepAsDraft(draft)">
-            <mat-icon>save</mat-icon>
-            Keep as Draft
-          </button>
-          <button mat-button color="warn" (click)="deleteDraft(draft)">
-            <mat-icon>delete</mat-icon>
-            Delete
-          </button>
+          <div class="action-group">
+            <button mat-button color="primary" (click)="toggleExpanded(draft)">
+              {{ draft.expanded ? 'Show Less' : 'Read More' }}
+              <mat-icon>{{ draft.expanded ? 'expand_less' : 'expand_more' }}</mat-icon>
+            </button>
+          </div>
+          <div class="action-group">
+            <button mat-raised-button color="primary" (click)="publishNow(draft)">
+              <mat-icon>publish</mat-icon>
+              Publish Now
+            </button>
+            <button mat-raised-button (click)="schedulePublish(draft)">
+              <mat-icon>schedule</mat-icon>
+              Schedule
+            </button>
+            <button mat-button (click)="keepAsDraft(draft)">
+              <mat-icon>save</mat-icon>
+              Keep as Draft
+            </button>
+            <button mat-button color="warn" (click)="deleteDraft(draft)">
+              <mat-icon>delete</mat-icon>
+              Delete
+            </button>
+          </div>
         </mat-card-actions>
       </mat-card>
-    </div>
+    </article>
     
     <div *ngIf="drafts.length === 0" class="no-drafts">
       <mat-icon>inbox</mat-icon>

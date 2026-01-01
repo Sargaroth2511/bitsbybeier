@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { CmsService } from '../services/cms.service';
 import { CmsContent } from '../models/cms.model';
 
@@ -12,11 +13,14 @@ import { CmsContent } from '../models/cms.model';
     standalone: false
 })
 export class BlogComponent implements OnInit {
-  posts: CmsContent[] = [];
+  posts: (CmsContent & { expanded?: boolean })[] = [];
   loading = false;
   error = '';
 
-  constructor(private cmsService: CmsService) {}
+  constructor(
+    private cmsService: CmsService,
+    private sanitizer: DomSanitizer
+  ) {}
 
   ngOnInit(): void {
     this.loadPosts();
@@ -31,7 +35,7 @@ export class BlogComponent implements OnInit {
     
     this.cmsService.getPublicContent().subscribe({
       next: (data) => {
-        this.posts = data;
+        this.posts = data.map(post => ({ ...post, expanded: false }));
         this.loading = false;
       },
       error: (error) => {
@@ -43,15 +47,31 @@ export class BlogComponent implements OnInit {
   }
 
   /**
-   * Gets preview text for a post.
+   * Toggles the expanded state of a post.
    */
-  getPreviewText(content: string, maxLength: number = 300): string {
-    const text = content
-      .replace(/#+\s/g, '') // Remove headers
-      .replace(/\*\*/g, '') // Remove bold
-      .replace(/\*/g, '') // Remove italic
-      .replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1'); // Remove links
+  toggleExpanded(post: CmsContent & { expanded?: boolean }): void {
+    post.expanded = !post.expanded;
+  }
+
+  /**
+   * Formats content with basic markdown-to-HTML conversion.
+   */
+  formatContent(content: string): SafeHtml {
+    // Basic markdown to HTML conversion
+    let html = content
+      // Headers
+      .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+      .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+      .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+      // Bold
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      // Italic
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      // Links
+      .replace(/\[([^\]]+)\]\(([^\)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
+      // Line breaks
+      .replace(/\n/g, '<br>');
     
-    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+    return this.sanitizer.sanitize(1, html) || '';
   }
 }

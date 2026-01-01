@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { CmsContent, ContentUpdateRequest } from '../models/cms.model';
+import { CmsContent, ContentUpdateRequest, ContentRequest } from '../models/cms.model';
 import { API_ENDPOINTS } from '../constants/api.constants';
 
 /**
@@ -32,6 +32,13 @@ export class CmsService {
    */
   getPublicContent(): Observable<CmsContent[]> {
     return this.http.get<CmsContent[]>(API_ENDPOINTS.CMS.PUBLIC);
+  }
+
+  /**
+   * Creates a new content item.
+   */
+  createContent(request: ContentRequest): Observable<CmsContent> {
+    return this.http.post<CmsContent>(API_ENDPOINTS.CMS.CONTENT, request);
   }
 
   /**
