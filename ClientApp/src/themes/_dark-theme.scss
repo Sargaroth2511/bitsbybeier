@@ -34,7 +34,11 @@ $dark-theme: mat.define-theme((
   --success-color: #56d364;
   --info-color: #58a6ff;
   --warning-color: #ffb74d;
+  --warning-bg: #3d2e00;
+  --warning-text: #ffb74d;
   --error-color: #f85149;
+  --error-bg: #3d0d0d;
+  --error-text: #f85149;
   
   // Interactive elements
   --link-color: #58a6ff;

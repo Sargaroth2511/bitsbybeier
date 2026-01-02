@@ -34,7 +34,11 @@ $light-theme: mat.define-theme((
   --success-color: #28a745;
   --info-color: #17a2b8;
   --warning-color: #ffc107;
+  --warning-bg: #fff3cd;
+  --warning-text: #856404;
   --error-color: #f44336;
+  --error-bg: #fee;
+  --error-text: #c33;
   
   // Interactive elements
   --link-color: #0366d6;

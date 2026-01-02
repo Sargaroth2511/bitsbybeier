@@ -13,7 +13,6 @@ import { CmsService } from '../services/cms.service';
 import { CmsContent } from '../models/cms.model';
 import { LoadingSpinnerComponent } from '../shared/components/loading-spinner.component';
 import { ErrorDisplayComponent } from '../shared/components/error-display.component';
-import { MarkdownPipe } from '../shared/pipes/markdown.pipe';
 
 /**
  * Component for the Content Management System (CMS) interface.
@@ -35,8 +34,7 @@ import { MarkdownPipe } from '../shared/pipes/markdown.pipe';
     MatCheckboxModule,
     MatSnackBarModule,
     LoadingSpinnerComponent,
-    ErrorDisplayComponent,
-    MarkdownPipe
+    ErrorDisplayComponent
   ]
 })
 export class CmsComponent implements OnInit {
