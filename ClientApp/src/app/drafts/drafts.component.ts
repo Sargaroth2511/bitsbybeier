@@ -1,27 +1,40 @@
-import { Component, OnInit } from '@angular/core';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { Component, OnInit, signal } from '@angular/core';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
 import { CmsService } from '../services/cms.service';
 import { CmsContent } from '../models/cms.model';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { BlogPostCardComponent } from '../shared/components/blog-post-card.component';
+import { LoadingSpinnerComponent } from '../shared/components/loading-spinner.component';
+import { ErrorDisplayComponent } from '../shared/components/error-display.component';
+import { MarkdownPipe } from '../shared/pipes/markdown.pipe';
 
 /**
  * Component for managing draft content (Admin only).
  */
 @Component({
-    selector: 'app-drafts',
-    templateUrl: './drafts.component.html',
-    styleUrls: ['./drafts.component.scss'],
-    standalone: false
+  selector: 'app-drafts',
+  templateUrl: './drafts.component.html',
+  styleUrls: ['./drafts.component.scss'],
+  standalone: true,
+  imports: [
+    MatIconModule,
+    MatButtonModule,
+    MatSnackBarModule,
+    BlogPostCardComponent,
+    LoadingSpinnerComponent,
+    ErrorDisplayComponent,
+    MarkdownPipe
+  ]
 })
 export class DraftsComponent implements OnInit {
-  drafts: (CmsContent & { expanded?: boolean })[] = [];
-  loading = false;
-  error = '';
+  drafts = signal<(CmsContent & { expanded?: boolean })[]>([]);
+  loading = signal(false);
+  error = signal('');
 
   constructor(
     private cmsService: CmsService,
-    private snackBar: MatSnackBar,
-    private sanitizer: DomSanitizer
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
@@ -32,17 +45,17 @@ export class DraftsComponent implements OnInit {
    * Loads draft content from the API.
    */
   loadDrafts(): void {
-    this.loading = true;
-    this.error = '';
+    this.loading.set(true);
+    this.error.set('');
     
     this.cmsService.getDraftContent().subscribe({
       next: (data) => {
-        this.drafts = data.map(draft => ({ ...draft, expanded: false }));
-        this.loading = false;
+        this.drafts.set(data.map(draft => ({ ...draft, expanded: false })));
+        this.loading.set(false);
       },
       error: (error) => {
-        this.error = 'Failed to load draft content';
-        this.loading = false;
+        this.error.set('Failed to load draft content');
+        this.loading.set(false);
         console.error('Error loading drafts', error);
         this.snackBar.open('Failed to load drafts', 'Close', { duration: 3000 });
       }
@@ -52,30 +65,12 @@ export class DraftsComponent implements OnInit {
   /**
    * Toggles the expanded state of a draft.
    */
-  toggleExpanded(draft: CmsContent & { expanded?: boolean }): void {
-    draft.expanded = !draft.expanded;
-  }
-
-  /**
-   * Formats content with basic markdown-to-HTML conversion.
-   */
-  formatContent(content: string): SafeHtml {
-    // Basic markdown to HTML conversion
-    let html = content
-      // Headers
-      .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-      .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-      .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-      // Bold
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      // Italic
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      // Links
-      .replace(/\[([^\]]+)\]\(([^\)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
-      // Line breaks
-      .replace(/\n/g, '<br>');
-    
-    return this.sanitizer.sanitize(1, html) || '';
+  toggleExpanded(index: number): void {
+    this.drafts.update(drafts => {
+      const newDrafts = [...drafts];
+      newDrafts[index] = { ...newDrafts[index], expanded: !newDrafts[index].expanded };
+      return newDrafts;
+    });
   }
 
   /**

@@ -6,58 +6,26 @@
     <span>Admin Section - Only visible to administrators</span>
   </div>
   
-  <div *ngIf="loading" class="loading-container">
-    <mat-spinner></mat-spinner>
-    <p>Loading drafts...</p>
-  </div>
+  @if (loading()) {
+    <app-loading-spinner message="Loading drafts..." />
+  }
   
-  <div *ngIf="error" class="alert alert-danger" role="alert">
-    {{ error }}
-  </div>
+  @if (error()) {
+    <app-error-display [message]="error()" />
+  }
   
-  <div *ngIf="!loading && !error" class="drafts-list">
-    <article *ngFor="let draft of drafts" class="draft-article">
-      <mat-card>
-        <mat-card-header>
-          <mat-card-title>{{ draft.title }}</mat-card-title>
-          <mat-card-subtitle *ngIf="draft.subtitle">{{ draft.subtitle }}</mat-card-subtitle>
-        </mat-card-header>
-        
-        <mat-card-content>
-          <div class="draft-badge">
-            <mat-chip-set>
-              <mat-chip color="accent" highlighted>DRAFT</mat-chip>
-            </mat-chip-set>
-          </div>
-
-          <div class="post-meta">
-            <span class="author">
-              <mat-icon>person</mat-icon>
-              {{ draft.author }}
-            </span>
-            <span class="date">
-              <mat-icon>calendar_today</mat-icon>
-              {{ draft.createdAt | date:'mediumDate' }}
-            </span>
-            <span *ngIf="draft.publishAt" class="scheduled">
-              <mat-icon>schedule</mat-icon>
-              Scheduled: {{ draft.publishAt | date:'medium' }}
-            </span>
-          </div>
-          
-          <div class="post-content" [class.expanded]="draft.expanded">
-            <div [innerHTML]="formatContent(draft.content)"></div>
-          </div>
-        </mat-card-content>
-        
-        <mat-card-actions>
-          <div class="action-group">
-            <button mat-button color="primary" (click)="toggleExpanded(draft)">
-              {{ draft.expanded ? 'Show Less' : 'Read More' }}
-              <mat-icon>{{ draft.expanded ? 'expand_less' : 'expand_more' }}</mat-icon>
-            </button>
-          </div>
-          <div class="action-group">
+  @if (!loading() && !error()) {
+    <div class="drafts-list">
+      @for (draft of drafts(); track draft.id; let i = $index) {
+        <app-blog-post-card 
+          [post]="draft" 
+          [expanded]="draft.expanded ?? false"
+          [showBadge]="true"
+          [showScheduled]="true"
+          [showToggle]="true"
+          (toggleExpanded)="toggleExpanded(i)">
+          <div [innerHTML]="draft.content | markdown"></div>
+          <div actions class="action-group">
             <button mat-raised-button color="primary" (click)="publishNow(draft)">
               <mat-icon>publish</mat-icon>
               Publish Now
@@ -75,13 +43,13 @@
               Delete
             </button>
           </div>
-        </mat-card-actions>
-      </mat-card>
-    </article>
-    
-    <div *ngIf="drafts.length === 0" class="no-drafts">
-      <mat-icon>inbox</mat-icon>
-      <p>No draft content available.</p>
+        </app-blog-post-card>
+      } @empty {
+        <div class="no-drafts">
+          <mat-icon>inbox</mat-icon>
+          <p>No draft content available.</p>
+        </div>
+      }
     </div>
-  </div>
+  }
 </div>
