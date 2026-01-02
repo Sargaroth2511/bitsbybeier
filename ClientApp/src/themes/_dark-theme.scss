@@ -12,54 +12,54 @@ $dark-theme: mat.define-theme((
 // CSS variables for dark theme
 [data-theme="dark"] {
   // Background colors
-  --bg-color: #1a1a1a;
-  --surface-color: #2d2d2d;
-  --card-bg: #2d2d2d;
+  --bg-color: #0d1117;
+  --surface-color: #161b22;
+  --card-bg: #161b22;
   
-  // Text colors
-  --text-color: #e9ecef;
-  --text-secondary: #adb5bd;
+  // Text colors - Even brighter for maximum contrast
+  --text-color: #ffffff;
+  --text-secondary: #e6edf3;
   --text-disabled: rgba(255, 255, 255, 0.38);
   
   // Primary colors
-  --primary-color: #4a9eff;
-  --primary-hover: #3d8ce7;
-  --primary-light: #1e3a5f;
+  --primary-color: #58a6ff;
+  --primary-hover: #79b8ff;
+  --primary-light: #1f6feb;
   
   // Accent colors
-  --accent-color: #ff4081;
-  --accent-hover: #f50057;
+  --accent-color: #ff7b72;
+  --accent-hover: #ffa198;
   
   // Semantic colors
-  --success-color: #4caf50;
-  --info-color: #29b6f6;
+  --success-color: #56d364;
+  --info-color: #58a6ff;
   --warning-color: #ffb74d;
-  --error-color: #f44336;
+  --error-color: #f85149;
   
   // Interactive elements
   --link-color: #58a6ff;
   --link-hover: #79b8ff;
   
   // Borders and dividers
-  --border-color: #404040;
-  --divider-color: rgba(255, 255, 255, 0.12);
+  --border-color: #30363d;
+  --divider-color: rgba(240, 246, 252, 0.1);
   
   // Navbar
-  --navbar-bg: #212529;
-  --navbar-text: #e9ecef;
+  --navbar-bg: #0d1117;
+  --navbar-text: #ffffff;
   
   // Inputs
-  --input-bg: #2d2d2d;
-  --input-border: #404040;
-  --input-focus-border: #4a9eff;
+  --input-bg: #0d1117;
+  --input-border: #30363d;
+  --input-focus-border: #58a6ff;
   
   // Shadows
-  --shadow-color: rgba(0, 0, 0, 0.3);
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+  --shadow-color: rgba(0, 0, 0, 0.5);
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.7);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.7);
   
   // Code
-  --code-color: #ff79c6;
-  --code-bg: #282a36;
+  --code-color: #ff7b72;
+  --code-bg: #161b22;
 }

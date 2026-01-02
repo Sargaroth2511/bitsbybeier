@@ -88,4 +88,74 @@ public record ContentResponse
     /// Timestamp when content was last updated.
     /// </summary>
     public DateTime? UpdatedAt { get; init; }
+
+    /// <summary>
+    /// Timestamp when the content should be published.
+    /// </summary>
+    public DateTime? PublishAt { get; init; }
+}
+
+/// <summary>
+/// Request model for updating content status.
+/// </summary>
+public record ContentUpdateRequest
+{
+    /// <summary>
+    /// Whether the content should be in draft state.
+    /// </summary>
+    public bool? Draft { get; init; }
+
+    /// <summary>
+    /// Whether the content is active.
+    /// </summary>
+    public bool? Active { get; init; }
+
+    /// <summary>
+    /// Timestamp when the content should be published.
+    /// </summary>
+    public DateTime? PublishAt { get; init; }
+}
+
+/// <summary>
+/// Request model for updating full content.
+/// </summary>
+public record ContentFullUpdateRequest
+{
+    /// <summary>
+    /// Author of the content.
+    /// </summary>
+    [MaxLength(200, ErrorMessage = "Author must not exceed 200 characters")]
+    public string? Author { get; init; }
+
+    /// <summary>
+    /// Title of the content.
+    /// </summary>
+    [MaxLength(500, ErrorMessage = "Title must not exceed 500 characters")]
+    public string? Title { get; init; }
+
+    /// <summary>
+    /// Subtitle or summary of the content.
+    /// </summary>
+    [MaxLength(1000, ErrorMessage = "Subtitle must not exceed 1000 characters")]
+    public string? Subtitle { get; init; }
+
+    /// <summary>
+    /// Main content text, supports Markdown.
+    /// </summary>
+    public string? Content { get; init; }
+
+    /// <summary>
+    /// Whether the content should be in draft state.
+    /// </summary>
+    public bool? Draft { get; init; }
+
+    /// <summary>
+    /// Whether the content is active.
+    /// </summary>
+    public bool? Active { get; init; }
+
+    /// <summary>
+    /// Timestamp when the content should be published.
+    /// </summary>
+    public DateTime? PublishAt { get; init; }
 }

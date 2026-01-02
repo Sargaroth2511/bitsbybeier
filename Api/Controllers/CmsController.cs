@@ -73,10 +73,80 @@ public class CmsController : BaseController
             Draft = c.Draft,
             Active = c.Active,
             CreatedAt = c.CreatedAt,
-            UpdatedAt = c.UpdatedAt
+            UpdatedAt = c.UpdatedAt,
+            PublishAt = c.PublishAt
         });
 
         Logger.LogDebug("Retrieved {Count} content items", contents.Count);
+        return Ok(response);
+    }
+
+    /// <summary>
+    /// Gets a list of draft content items only.
+    /// </summary>
+    /// <returns>Array of draft content items.</returns>
+    /// <response code="200">Returns the list of draft content items.</response>
+    /// <response code="401">If user is not authenticated.</response>
+    /// <response code="403">If user does not have Admin role.</response>
+    [HttpGet("content/drafts")]
+    [ProducesResponseType(typeof(IEnumerable<ContentResponse>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetDraftContent()
+    {
+        var contents = await Context.Contents
+            .Where(c => c.Draft)
+            .OrderByDescending(c => c.CreatedAt)
+            .ToListAsync();
+
+        var response = contents.Select(c => new ContentResponse
+        {
+            Id = c.Id,
+            Author = c.Author,
+            Title = c.Title,
+            Subtitle = c.Subtitle,
+            Content = c.ContentText,
+            Draft = c.Draft,
+            Active = c.Active,
+            CreatedAt = c.CreatedAt,
+            UpdatedAt = c.UpdatedAt,
+            PublishAt = c.PublishAt
+        });
+
+        Logger.LogDebug("Retrieved {Count} draft content items", contents.Count);
+        return Ok(response);
+    }
+
+    /// <summary>
+    /// Gets a list of public (non-draft) content items.
+    /// </summary>
+    /// <returns>Array of public content items.</returns>
+    /// <response code="200">Returns the list of public content items.</response>
+    [HttpGet("content/public")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(IEnumerable<ContentResponse>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetPublicContent()
+    {
+        var contents = await Context.Contents
+            .Where(c => !c.Draft && c.Active)
+            .OrderByDescending(c => c.CreatedAt)
+            .ToListAsync();
+
+        var response = contents.Select(c => new ContentResponse
+        {
+            Id = c.Id,
+            Author = c.Author,
+            Title = c.Title,
+            Subtitle = c.Subtitle,
+            Content = c.ContentText,
+            Draft = c.Draft,
+            Active = c.Active,
+            CreatedAt = c.CreatedAt,
+            UpdatedAt = c.UpdatedAt,
+            PublishAt = c.PublishAt
+        });
+
+        Logger.LogDebug("Retrieved {Count} public content items", contents.Count);
         return Ok(response);
     }
 
@@ -108,10 +178,133 @@ public class CmsController : BaseController
             Draft = content.Draft,
             Active = content.Active,
             CreatedAt = content.CreatedAt,
-            UpdatedAt = content.UpdatedAt
+            UpdatedAt = content.UpdatedAt,
+            PublishAt = content.PublishAt
         };
 
         Logger.LogInformation("Content created with ID {ContentId}", content.Id);
         return Created($"/api/cms/content/{content.Id}", response);
+    }
+
+    /// <summary>
+    /// Updates an existing content item's status.
+    /// </summary>
+    /// <param name="id">Content item ID.</param>
+    /// <param name="request">Update request with fields to update.</param>
+    /// <returns>The updated content item.</returns>
+    /// <response code="200">Returns the updated content item.</response>
+    /// <response code="400">If the request data is invalid.</response>
+    /// <response code="401">If user is not authenticated.</response>
+    /// <response code="403">If user does not have Admin role.</response>
+    /// <response code="404">If content item not found.</response>
+    [HttpPut("content/{id}")]
+    [ProducesResponseType(typeof(ContentResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateContent(int id, ContentUpdateRequest request)
+    {
+        try
+        {
+            var content = await _contentService.UpdateContentAsync(id, request);
+
+            var response = new ContentResponse
+            {
+                Id = content.Id,
+                Author = content.Author,
+                Title = content.Title,
+                Subtitle = content.Subtitle,
+                Content = content.ContentText,
+                Draft = content.Draft,
+                Active = content.Active,
+                CreatedAt = content.CreatedAt,
+                UpdatedAt = content.UpdatedAt,
+                PublishAt = content.PublishAt
+            };
+
+            Logger.LogInformation("Content updated with ID {ContentId}", content.Id);
+            return Ok(response);
+        }
+        catch (InvalidOperationException ex)
+        {
+            Logger.LogWarning("Content not found: {Message}", ex.Message);
+            return NotFound(new ErrorResponse { Message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Updates an existing content item with full content fields.
+    /// </summary>
+    /// <param name="id">Content item ID.</param>
+    /// <param name="request">Full update request with all fields to update.</param>
+    /// <returns>The updated content item.</returns>
+    /// <response code="200">Returns the updated content item.</response>
+    /// <response code="400">If the request data is invalid.</response>
+    /// <response code="401">If user is not authenticated.</response>
+    /// <response code="403">If user does not have Admin role.</response>
+    /// <response code="404">If content item not found.</response>
+    [HttpPatch("content/{id}")]
+    [ProducesResponseType(typeof(ContentResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateContentFull(int id, ContentFullUpdateRequest request)
+    {
+        try
+        {
+            var content = await _contentService.UpdateContentFullAsync(id, request);
+
+            var response = new ContentResponse
+            {
+                Id = content.Id,
+                Author = content.Author,
+                Title = content.Title,
+                Subtitle = content.Subtitle,
+                Content = content.ContentText,
+                Draft = content.Draft,
+                Active = content.Active,
+                CreatedAt = content.CreatedAt,
+                UpdatedAt = content.UpdatedAt,
+                PublishAt = content.PublishAt
+            };
+
+            Logger.LogInformation("Content fully updated with ID {ContentId}", content.Id);
+            return Ok(response);
+        }
+        catch (InvalidOperationException ex)
+        {
+            Logger.LogWarning("Content not found: {Message}", ex.Message);
+            return NotFound(new ErrorResponse { Message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Deletes a content item.
+    /// </summary>
+    /// <param name="id">Content item ID.</param>
+    /// <returns>No content on success.</returns>
+    /// <response code="204">Content deleted successfully.</response>
+    /// <response code="401">If user is not authenticated.</response>
+    /// <response code="403">If user does not have Admin role.</response>
+    /// <response code="404">If content item not found.</response>
+    [HttpDelete("content/{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteContent(int id)
+    {
+        var deleted = await _contentService.DeleteContentAsync(id);
+        
+        if (!deleted)
+        {
+            Logger.LogWarning("Content not found with ID {ContentId}", id);
+            return NotFound(new ErrorResponse { Message = $"Content with ID {id} not found" });
+        }
+
+        Logger.LogInformation("Content deleted with ID {ContentId}", id);
+        return NoContent();
     }
 }

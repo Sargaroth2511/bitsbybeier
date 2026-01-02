@@ -10,7 +10,9 @@ export const API_ENDPOINTS = {
   /** CMS endpoints */
   CMS: {
     ROOT: '/api/cms',
-    CONTENT: '/api/cms/content'
+    CONTENT: '/api/cms/content',
+    DRAFTS: '/api/cms/content/drafts',
+    PUBLIC: '/api/cms/content/public'
   },
   /** Health check endpoint */
   HEALTH: '/api/health'
