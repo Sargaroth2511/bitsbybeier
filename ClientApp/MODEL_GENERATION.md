@@ -30,7 +30,11 @@ All generated files are placed in `src/app/models/generated/` and include:
 - `*.model.ts` - Individual model files
 - `index.ts` - Barrel export file
 
-**Important**: Do not manually edit generated files. They will be overwritten on the next generation run.
+**Important**: Generated files are committed to the repository to ensure the build works without requiring model generation. When you update backend models, regenerate the frontend models and commit the changes.
+
+## Integration with Existing Models
+
+Some models like `UserRole` are defined both in `auth.model.ts` (for immediate build compatibility) and generated in `models/generated/`. The generated versions are provided for reference and consistency, but the handwritten versions in the main models directory take precedence in imports.
 
 ## Type Mappings
 
