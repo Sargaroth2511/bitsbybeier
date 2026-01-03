@@ -43,14 +43,6 @@ export class AuthService {
     this.isBrowser = isPlatformBrowser(platformId);
     const user = this.isBrowser ? this.getUserFromToken() : null;
     this._currentUser.set(user);
-    
-    // Debug logging
-    if (this.isBrowser && user) {
-      console.log('[AuthService] Initialized with user:', user);
-      console.log('[AuthService] isAuthenticated:', this.isAuthenticated());
-      console.log('[AuthService] userRole:', this.userRole());
-      console.log('[AuthService] isAdmin:', this.isAdmin());
-    }
   }
 
   /**
@@ -99,19 +91,12 @@ export class AuthService {
       tap(response => {
         if (response.token) {
           this.setToken(response.token);
-          const user = {
+          this._currentUser.set({
             email: response.email,
             name: response.name,
             role: response.role,
             userId: response.userId
-          };
-          this._currentUser.set(user);
-          
-          // Debug logging
-          console.log('[AuthService] User logged in:', user);
-          console.log('[AuthService] isAuthenticated:', this.isAuthenticated());
-          console.log('[AuthService] userRole:', this.userRole());
-          console.log('[AuthService] isAdmin:', this.isAdmin());
+          });
         }
       }),
       catchError(error => {
