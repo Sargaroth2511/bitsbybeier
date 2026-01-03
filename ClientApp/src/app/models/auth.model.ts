@@ -1,3 +1,6 @@
+// Re-export the generated UserRole enum for convenience
+export { UserRole } from './generated/userrole.model';
+
 /**
  * Represents a user in the system.
  */

@@ -35,6 +35,9 @@ yarn-error.log
 testem.log
 /typings
 
+# Auto-generated models
+/src/app/models/generated
+
 # System Files
 .DS_Store
 Thumbs.db

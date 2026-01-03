@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { isPlatformBrowser } from '@angular/common';
-import { User, AuthenticationResponse, GoogleTokenRequest } from '../models/auth.model';
+import { User, UserRole, AuthenticationResponse, GoogleTokenRequest } from '../models/auth.model';
 import { API_ENDPOINTS, STORAGE_KEYS } from '../constants/api.constants';
 
 /**
@@ -31,7 +31,7 @@ export class AuthService {
       return null;
     }
   });
-  public readonly isAdmin = computed(() => this.userRole() === 'Admin');
+  public readonly isAdmin = computed(() => this.userRole() === UserRole.Admin);
 
   constructor(
     private http: HttpClient,
@@ -174,7 +174,8 @@ export class AuthService {
       const payload = this.parseTokenPayload(token);
       return {
         email: payload.email || payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'],
-        name: payload.name || payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name']
+        name: payload.name || payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'],
+        role: payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || payload.role
       };
     } catch (e) {
       return null;
