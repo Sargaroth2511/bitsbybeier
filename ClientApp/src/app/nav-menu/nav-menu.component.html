@@ -14,29 +14,35 @@
         <a mat-button [routerLink]="['/blog']">
           Blog
         </a>
-        <a mat-button *ngIf="isAuthenticated && isAdmin" [routerLink]="['/drafts']">
-          Drafts
-        </a>
-        <a mat-button *ngIf="isAuthenticated && isAdmin" [routerLink]="['/cms']">
-          CMS
-        </a>
-        <a mat-button *ngIf="!isAuthenticated" [routerLink]="['/login']">
-          Login
-        </a>
-        <span class="user-name" *ngIf="isAuthenticated && currentUser">
-          {{ currentUser.name }}
-        </span>
-        <button mat-button *ngIf="isAuthenticated" (click)="logout()" aria-label="Sign out">
-          Logout
-        </button>
+        @if (isAuthenticated() && isAdmin()) {
+          <a mat-button [routerLink]="['/drafts']">
+            Drafts
+          </a>
+          <a mat-button [routerLink]="['/cms']">
+            CMS
+          </a>
+        }
+        @if (!isAuthenticated()) {
+          <a mat-button [routerLink]="['/login']">
+            Login
+          </a>
+        }
+        @if (isAuthenticated() && currentUser()) {
+          <span class="user-name">
+            {{ currentUser()!.name }}
+          </span>
+          <button mat-button (click)="logout()" aria-label="Sign out">
+            Logout
+          </button>
+        }
         <button 
           mat-icon-button 
           class="theme-toggle" 
           (click)="toggleTheme()"
-          [attr.aria-label]="isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'"
-          [title]="isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'"
+          [attr.aria-label]="isDarkMode() ? 'Switch to light mode' : 'Switch to dark mode'"
+          [title]="isDarkMode() ? 'Switch to light mode' : 'Switch to dark mode'"
         >
-          <span class="theme-icon">{{ isDarkMode ? '☀️' : '🌙' }}</span>
+          <span class="theme-icon">{{ isDarkMode() ? '☀️' : '🌙' }}</span>
         </button>
       </nav>
 
@@ -59,29 +65,35 @@
       <a mat-list-item [routerLink]="['/blog']" (click)="collapse()">
         Blog
       </a>
-      <a mat-list-item *ngIf="isAuthenticated && isAdmin" [routerLink]="['/drafts']" (click)="collapse()">
-        Drafts
-      </a>
-      <a mat-list-item *ngIf="isAuthenticated && isAdmin" [routerLink]="['/cms']" (click)="collapse()">
-        CMS
-      </a>
-      <a mat-list-item *ngIf="!isAuthenticated" [routerLink]="['/login']" (click)="collapse()">
-        Login
-      </a>
-      <div class="mobile-user-info" *ngIf="isAuthenticated && currentUser">
-        <span class="user-name">{{ currentUser.name }}</span>
-      </div>
-      <button mat-list-item *ngIf="isAuthenticated" (click)="logout(); collapse()">
-        Logout
-      </button>
+      @if (isAuthenticated() && isAdmin()) {
+        <a mat-list-item [routerLink]="['/drafts']" (click)="collapse()">
+          Drafts
+        </a>
+        <a mat-list-item [routerLink]="['/cms']" (click)="collapse()">
+          CMS
+        </a>
+      }
+      @if (!isAuthenticated()) {
+        <a mat-list-item [routerLink]="['/login']" (click)="collapse()">
+          Login
+        </a>
+      }
+      @if (isAuthenticated() && currentUser()) {
+        <div class="mobile-user-info">
+          <span class="user-name">{{ currentUser()!.name }}</span>
+        </div>
+        <button mat-list-item (click)="logout(); collapse()">
+          Logout
+        </button>
+      }
       <button 
         mat-list-item
         class="theme-toggle-mobile" 
         (click)="toggleTheme()"
-        [attr.aria-label]="isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'"
+        [attr.aria-label]="isDarkMode() ? 'Switch to light mode' : 'Switch to dark mode'"
       >
-        <span class="theme-icon">{{ isDarkMode ? '☀️' : '🌙' }}</span>
-        <span class="theme-text">{{ isDarkMode ? 'Light Mode' : 'Dark Mode' }}</span>
+        <span class="theme-icon">{{ isDarkMode() ? '☀️' : '🌙' }}</span>
+        <span class="theme-text">{{ isDarkMode() ? 'Light Mode' : 'Dark Mode' }}</span>
       </button>
     </nav>
   </div>
