@@ -17,20 +17,23 @@ export class AuthService {
   private _currentUser = signal<User | null>(null);
   
   public readonly currentUser: Signal<User | null> = this._currentUser.asReadonly();
-  public readonly isAuthenticated = computed(() => !!this.token);
-  public readonly userRole = computed(() => {
-    if (!this.isBrowser) return null;
-    
-    const token = localStorage.getItem(STORAGE_KEYS.JWT_TOKEN);
-    if (!token) return null;
-
-    try {
-      const payload = this.parseTokenPayload(token);
-      return payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || payload.role || null;
-    } catch (e) {
-      return null;
-    }
+  
+  // isAuthenticated depends on currentUser signal AND checks token validity
+  public readonly isAuthenticated = computed(() => {
+    const user = this._currentUser();
+    if (!user) return false;
+    // Also verify token still exists and is valid
+    return !!this.token;
   });
+  
+  // userRole computed from currentUser signal
+  public readonly userRole = computed(() => {
+    const user = this._currentUser();
+    if (!user || !user.role) return null;
+    return user.role;
+  });
+  
+  // isAdmin checks if userRole matches Admin enum value
   public readonly isAdmin = computed(() => this.userRole() === UserRole.Admin);
 
   constructor(
@@ -40,6 +43,14 @@ export class AuthService {
     this.isBrowser = isPlatformBrowser(platformId);
     const user = this.isBrowser ? this.getUserFromToken() : null;
     this._currentUser.set(user);
+    
+    // Debug logging
+    if (this.isBrowser && user) {
+      console.log('[AuthService] Initialized with user:', user);
+      console.log('[AuthService] isAuthenticated:', this.isAuthenticated());
+      console.log('[AuthService] userRole:', this.userRole());
+      console.log('[AuthService] isAdmin:', this.isAdmin());
+    }
   }
 
   /**
@@ -88,12 +99,19 @@ export class AuthService {
       tap(response => {
         if (response.token) {
           this.setToken(response.token);
-          this._currentUser.set({
+          const user = {
             email: response.email,
             name: response.name,
             role: response.role,
             userId: response.userId
-          });
+          };
+          this._currentUser.set(user);
+          
+          // Debug logging
+          console.log('[AuthService] User logged in:', user);
+          console.log('[AuthService] isAuthenticated:', this.isAuthenticated());
+          console.log('[AuthService] userRole:', this.userRole());
+          console.log('[AuthService] isAdmin:', this.isAdmin());
         }
       }),
       catchError(error => {

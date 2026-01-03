@@ -38,7 +38,14 @@ export class NavMenuComponent {
     private themeService: ThemeService,
     private authService: AuthService,
     private router: Router
-  ) {}
+  ) {
+    // Debug logging
+    effect(() => {
+      console.log('[NavMenu] currentUser:', this.currentUser());
+      console.log('[NavMenu] isAuthenticated:', this.isAuthenticated());
+      console.log('[NavMenu] isAdmin:', this.isAdmin());
+    });
+  }
 
   /**
    * Collapses the navigation menu.
