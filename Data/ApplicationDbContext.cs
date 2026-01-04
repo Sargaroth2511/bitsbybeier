@@ -348,6 +348,7 @@ public class ApplicationDbContext : DbContext
             // Indexes for better query performance
             entity.HasIndex(e => e.Token).IsUnique();
             entity.HasIndex(e => e.Revoked);
+            entity.HasIndex(e => e.ExpiresAt);
         });
     }
 }

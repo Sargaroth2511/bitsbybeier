@@ -140,6 +140,11 @@ namespace bitsbybeier.Migrations
                 column: "Revoked");
 
             migrationBuilder.CreateIndex(
+                name: "IX_OAuthRefreshTokens_ExpiresAt",
+                table: "OAuthRefreshTokens",
+                column: "ExpiresAt");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_OAuthRefreshTokens_UserId",
                 table: "OAuthRefreshTokens",
                 column: "UserId");

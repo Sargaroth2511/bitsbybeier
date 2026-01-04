@@ -31,6 +31,12 @@ public class OAuthManagementController : BaseController
     [HttpPost("clients")]
     public async Task<IActionResult> CreateClient([FromBody] CreateOAuthClientRequest request)
     {
+        // Validate user authentication
+        if (string.IsNullOrEmpty(UserId) || !int.TryParse(UserId, out var userId))
+        {
+            return Unauthorized(new { error = "User authentication required" });
+        }
+        
         var clientId = Guid.NewGuid().ToString("N");
         var clientSecret = GenerateClientSecret();
         
@@ -42,7 +48,7 @@ public class OAuthManagementController : BaseController
             RedirectUris = JsonSerializer.Serialize(request.RedirectUris),
             AllowedScopes = JsonSerializer.Serialize(request.AllowedScopes ?? new List<string> { "mcp:read", "mcp:write" }),
             Active = true,
-            CreatedByUserId = int.Parse(UserId ?? "0")
+            CreatedByUserId = userId
         };
         
         Context.OAuthClients.Add(client);

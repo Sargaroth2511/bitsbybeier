@@ -68,18 +68,19 @@ public class OAuthController : BaseController
             return BadRequest(new { error = "invalid_scope" });
         }
         
-        // In a real implementation, show a consent page here
-        // For now, we'll auto-approve if user has Admin role
-        if (!User.IsInRole("Admin"))
-        {
-            return Forbid();
-        }
-        
         // Get user ID from claims
         var userIdClaim = UserId;
         if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var userId))
         {
             return Unauthorized(new { error = "invalid_user" });
+        }
+        
+        // TODO: In production, show a consent page here instead of auto-approving
+        // For now, we'll auto-approve if user has Admin role for development purposes
+        // This allows ChatGPT and other OAuth clients to complete the flow
+        if (!User.IsInRole("Admin"))
+        {
+            return Forbid();
         }
         
         // Create authorization code

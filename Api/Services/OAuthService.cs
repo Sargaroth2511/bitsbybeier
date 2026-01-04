@@ -225,16 +225,32 @@ public class OAuthService : IOAuthService
     
     public bool ValidateRedirectUri(OAuthClient client, string redirectUri)
     {
-        var allowedUris = JsonSerializer.Deserialize<List<string>>(client.RedirectUris);
-        return allowedUris?.Contains(redirectUri) ?? false;
+        try
+        {
+            var allowedUris = JsonSerializer.Deserialize<List<string>>(client.RedirectUris);
+            return allowedUris?.Contains(redirectUri) ?? false;
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogError(ex, "Failed to deserialize RedirectUris for client {ClientId}", client.ClientId);
+            return false;
+        }
     }
     
     public bool ValidateScope(OAuthClient client, string scope)
     {
-        var allowedScopes = JsonSerializer.Deserialize<List<string>>(client.AllowedScopes);
-        var requestedScopes = scope.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        
-        return requestedScopes.All(s => allowedScopes?.Contains(s) ?? false);
+        try
+        {
+            var allowedScopes = JsonSerializer.Deserialize<List<string>>(client.AllowedScopes);
+            var requestedScopes = scope.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            
+            return requestedScopes.All(s => allowedScopes?.Contains(s) ?? false);
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogError(ex, "Failed to deserialize AllowedScopes for client {ClientId}", client.ClientId);
+            return false;
+        }
     }
     
     private static string GenerateSecureToken()
