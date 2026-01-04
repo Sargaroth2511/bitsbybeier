@@ -1,0 +1,100 @@
+// Common utility classes that can be used across components
+
+// Container utilities
+@mixin container($max-width: 1200px) {
+  padding: 2rem;
+  max-width: $max-width;
+  margin: 0 auto;
+  
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
+}
+
+// Card utilities
+@mixin card {
+  background-color: var(--card-bg);
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+// Badge utilities
+@mixin badge($bg-color, $text-color) {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  background-color: $bg-color;
+  color: $text-color;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+// Meta info utilities
+@mixin meta-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  
+  span {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  
+  mat-icon {
+    font-size: 1.1rem;
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+}
+
+// Empty state utilities
+@mixin empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1rem;
+  color: var(--text-secondary);
+  
+  mat-icon {
+    font-size: 4rem;
+    width: 4rem;
+    height: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }
+  
+  h2, p {
+    color: var(--text-secondary);
+    text-align: center;
+  }
+}
+
+// Form field utilities
+@mixin full-width-field {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+// Button group utilities
+@mixin button-group {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+// Content preview utilities
+@mixin content-preview($max-height: 150px) {
+  max-height: $max-height;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  
+  &.expanded {
+    max-height: none;
+  }
+}

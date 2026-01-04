@@ -1,40 +1,64 @@
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { Component, OnInit, signal, computed } from '@angular/core';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { DatePipe } from '@angular/common';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { AuthService } from '../services/auth.service';
 import { CmsService } from '../services/cms.service';
-import { User } from '../models/auth.model';
 import { CmsContent } from '../models/cms.model';
+import { LoadingSpinnerComponent } from '../shared/components/loading-spinner.component';
+import { ErrorDisplayComponent } from '../shared/components/error-display.component';
 
 /**
  * Component for the Content Management System (CMS) interface.
  * Accessible only to users with Admin role.
  */
 @Component({
-    selector: 'app-cms',
-    templateUrl: './cms.component.html',
-    styleUrls: ['./cms.component.scss'],
-    standalone: false
+  selector: 'app-cms',
+  templateUrl: './cms.component.html',
+  styleUrls: ['./cms.component.scss'],
+  standalone: true,
+  imports: [
+    DatePipe,
+    ReactiveFormsModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatIconModule,
+    MatCheckboxModule,
+    MatSnackBarModule,
+    LoadingSpinnerComponent,
+    ErrorDisplayComponent
+  ]
 })
 export class CmsComponent implements OnInit {
-  currentUser: User | null = null;
-  content: CmsContent[] = [];
-  loading = false;
-  error = '';
-  creating = false;
-  showPreview = false;
+  currentUser = this.authService.currentUser;
+  content = signal<CmsContent[]>([]);
+  loading = signal(false);
+  error = signal('');
+  creating = signal(false);
+  showPreview = signal(false);
   today = new Date();
-  editingContentId: number | null = null; // Track if we're editing
+  editingContentId = signal<number | null>(null);
   
   contentForm: FormGroup;
+  
+  previewContent = computed(() => {
+    const content = this.contentForm.get('content')?.value || '';
+    return this.formatMarkdown(content);
+  });
 
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
     private cmsService: CmsService,
-    private snackBar: MatSnackBar,
-    private sanitizer: DomSanitizer
+    private snackBar: MatSnackBar
   ) {
     this.contentForm = this.fb.group({
       author: ['', Validators.required],
@@ -46,15 +70,13 @@ export class CmsComponent implements OnInit {
   }
 
   /**
-   * Initializes the component by subscribing to current user and loading content.
+   * Initializes the component by setting up user and loading content.
    */
   ngOnInit(): void {
-    this.authService.currentUser$.subscribe(user => {
-      this.currentUser = user;
-      if (user && user.name) {
-        this.contentForm.patchValue({ author: user.name });
-      }
-    });
+    const user = this.currentUser();
+    if (user && user.name) {
+      this.contentForm.patchValue({ author: user.name });
+    }
     
     this.loadContent();
   }
@@ -63,17 +85,17 @@ export class CmsComponent implements OnInit {
    * Loads CMS content from the API.
    */
   loadContent(): void {
-    this.loading = true;
-    this.error = '';
+    this.loading.set(true);
+    this.error.set('');
     
     this.cmsService.getAllContent().subscribe({
       next: (data) => {
-        this.content = data;
-        this.loading = false;
+        this.content.set(data);
+        this.loading.set(false);
       },
       error: (error) => {
-        this.error = 'Failed to load content';
-        this.loading = false;
+        this.error.set('Failed to load content');
+        this.loading.set(false);
         console.error('Error loading content', error);
       }
     });
@@ -87,12 +109,13 @@ export class CmsComponent implements OnInit {
       return;
     }
 
-    this.creating = true;
+    this.creating.set(true);
     const formValue = this.contentForm.value;
+    const editingId = this.editingContentId();
     
-    if (this.editingContentId) {
+    if (editingId) {
       // Update existing content with full fields
-      this.cmsService.updateContentFull(this.editingContentId, {
+      this.cmsService.updateContentFull(editingId, {
         author: formValue.author,
         title: formValue.title,
         subtitle: formValue.subtitle,
@@ -108,12 +131,12 @@ export class CmsComponent implements OnInit {
           );
           this.resetForm();
           this.loadContent();
-          this.creating = false;
+          this.creating.set(false);
         },
         error: (error) => {
           console.error('Error updating content', error);
           this.snackBar.open('Failed to update content', 'Close', { duration: 3000 });
-          this.creating = false;
+          this.creating.set(false);
         }
       });
     } else {
@@ -127,12 +150,12 @@ export class CmsComponent implements OnInit {
           );
           this.resetForm();
           this.loadContent();
-          this.creating = false;
+          this.creating.set(false);
         },
         error: (error) => {
           console.error('Error creating content', error);
           this.snackBar.open('Failed to create content', 'Close', { duration: 3000 });
-          this.creating = false;
+          this.creating.set(false);
         }
       });
     }
@@ -142,19 +165,20 @@ export class CmsComponent implements OnInit {
    * Resets the form.
    */
   resetForm(): void {
+    const user = this.currentUser();
     this.contentForm.reset({
-      author: this.currentUser?.name || '',
+      author: user?.name || '',
       draft: true
     });
-    this.showPreview = false;
-    this.editingContentId = null; // Clear editing state
+    this.showPreview.set(false);
+    this.editingContentId.set(null);
   }
 
   /**
    * Edits existing content by loading it into the form.
    */
   editContent(content: CmsContent): void {
-    this.editingContentId = content.id; // Set editing state
+    this.editingContentId.set(content.id);
     this.contentForm.patchValue({
       author: content.author,
       title: content.title,
@@ -162,7 +186,7 @@ export class CmsComponent implements OnInit {
       content: content.content,
       draft: content.draft
     });
-    this.showPreview = false;
+    this.showPreview.set(false);
     // Scroll to form
     window.scrollTo({ top: 0, behavior: 'smooth' });
     this.snackBar.open('Content loaded for editing. Modify and save to update.', 'Close', { duration: 3000 });
@@ -171,15 +195,14 @@ export class CmsComponent implements OnInit {
   /**
    * Shows content preview.
    */
-  previewContent(): void {
-    this.showPreview = true;
+  togglePreview(): void {
+    this.showPreview.update(val => !val);
   }
 
   /**
-   * Gets formatted preview HTML.
+   * Formats markdown content to HTML.
    */
-  getFormattedPreview(): SafeHtml {
-    const content = this.contentForm.get('content')?.value || '';
+  private formatMarkdown(content: string): string {
     let html = content
       .replace(/^### (.*$)/gim, '<h3>$1</h3>')
       .replace(/^## (.*$)/gim, '<h2>$1</h2>')
@@ -189,6 +212,6 @@ export class CmsComponent implements OnInit {
       .replace(/\[([^\]]+)\]\(([^\)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
       .replace(/\n/g, '<br>');
     
-    return this.sanitizer.sanitize(1, html) || '';
+    return html;
   }
 }

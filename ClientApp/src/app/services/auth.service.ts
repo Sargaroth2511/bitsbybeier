@@ -1,9 +1,9 @@
-import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID, signal, computed, Signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { isPlatformBrowser } from '@angular/common';
-import { User, AuthenticationResponse, GoogleTokenRequest } from '../models/auth.model';
+import { User, UserRole, AuthenticationResponse, GoogleTokenRequest } from '../models/auth.model';
 import { API_ENDPOINTS, STORAGE_KEYS } from '../constants/api.constants';
 
 /**
@@ -13,9 +13,28 @@ import { API_ENDPOINTS, STORAGE_KEYS } from '../constants/api.constants';
   providedIn: 'root'
 })
 export class AuthService {
-  private currentUserSubject: BehaviorSubject<User | null>;
-  public currentUser$: Observable<User | null>;
   private isBrowser: boolean;
+  private _currentUser = signal<User | null>(null);
+  
+  public readonly currentUser: Signal<User | null> = this._currentUser.asReadonly();
+  
+  // isAuthenticated depends on currentUser signal AND checks token validity
+  public readonly isAuthenticated = computed(() => {
+    const user = this._currentUser();
+    if (!user) return false;
+    // Also verify token still exists and is valid
+    return !!this.token;
+  });
+  
+  // userRole computed from currentUser signal
+  public readonly userRole = computed(() => {
+    const user = this._currentUser();
+    if (!user || !user.role) return null;
+    return user.role;
+  });
+  
+  // isAdmin checks if userRole matches Admin enum value
+  public readonly isAdmin = computed(() => this.userRole() === UserRole.Admin);
 
   constructor(
     private http: HttpClient,
@@ -23,15 +42,14 @@ export class AuthService {
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
     const user = this.isBrowser ? this.getUserFromToken() : null;
-    this.currentUserSubject = new BehaviorSubject<User | null>(user);
-    this.currentUser$ = this.currentUserSubject.asObservable();
+    this._currentUser.set(user);
   }
 
   /**
    * Gets the current user value synchronously.
    */
   public get currentUserValue(): User | null {
-    return this.currentUserSubject.value;
+    return this._currentUser();
   }
 
   /**
@@ -57,7 +75,7 @@ export class AuthService {
    * Checks if the user is authenticated.
    * @returns True if user has a valid token, false otherwise.
    */
-  public isAuthenticated(): boolean {
+  public isAuthenticatedValue(): boolean {
     return !!this.token;
   }
 
@@ -73,7 +91,7 @@ export class AuthService {
       tap(response => {
         if (response.token) {
           this.setToken(response.token);
-          this.currentUserSubject.next({
+          this._currentUser.set({
             email: response.email,
             name: response.name,
             role: response.role,
@@ -117,7 +135,7 @@ export class AuthService {
     if (this.isBrowser) {
       localStorage.removeItem(STORAGE_KEYS.JWT_TOKEN);
     }
-    this.currentUserSubject.next(null);
+    this._currentUser.set(null);
   }
 
   /**
@@ -159,7 +177,8 @@ export class AuthService {
       const payload = this.parseTokenPayload(token);
       return {
         email: payload.email || payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'],
-        name: payload.name || payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name']
+        name: payload.name || payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'],
+        role: payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || payload.role
       };
     } catch (e) {
       return null;

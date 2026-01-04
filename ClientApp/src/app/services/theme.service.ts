@@ -1,6 +1,5 @@
-import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID, signal, computed, Signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { BehaviorSubject, Observable } from 'rxjs';
 
 /**
  * Service for managing application theme (light/dark mode).
@@ -10,15 +9,16 @@ import { BehaviorSubject, Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class ThemeService {
-  private darkModeSubject: BehaviorSubject<boolean>;
-  public darkMode$: Observable<boolean>;
   private isBrowser: boolean;
+  private _darkMode = signal<boolean>(false);
+  
+  public readonly darkMode: Signal<boolean> = this._darkMode.asReadonly();
 
   constructor(@Inject(PLATFORM_ID) platformId: Object) {
     this.isBrowser = isPlatformBrowser(platformId);
-    this.darkModeSubject = new BehaviorSubject<boolean>(this.getInitialTheme());
-    this.darkMode$ = this.darkModeSubject.asObservable();
-    this.applyTheme(this.darkModeSubject.value);
+    const initialTheme = this.getInitialTheme();
+    this._darkMode.set(initialTheme);
+    this.applyTheme(initialTheme);
   }
 
   /**
@@ -52,8 +52,8 @@ export class ThemeService {
    * Toggles between light and dark theme.
    */
   public toggleTheme(): void {
-    const newValue = !this.darkModeSubject.value;
-    this.darkModeSubject.next(newValue);
+    const newValue = !this._darkMode();
+    this._darkMode.set(newValue);
     this.applyTheme(newValue);
     
     if (this.isBrowser) {
@@ -70,7 +70,7 @@ export class ThemeService {
    * @returns True if dark mode is active, false otherwise.
    */
   public isDarkMode(): boolean {
-    return this.darkModeSubject.value;
+    return this._darkMode();
   }
 
   /**

@@ -1,18 +1,29 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { DatePipe } from '@angular/common';
+import { LoadingSpinnerComponent } from '../shared/components/loading-spinner.component';
 
 @Component({
-    selector: 'app-fetch-data',
-    templateUrl: './fetch-data.component.html',
-    standalone: false
+  selector: 'app-fetch-data',
+  templateUrl: './fetch-data.component.html',
+  standalone: true,
+  imports: [DatePipe, LoadingSpinnerComponent]
 })
 export class FetchDataComponent {
-  public forecasts: WeatherForecast[] = [];
+  forecasts = signal<WeatherForecast[]>([]);
+  loading = signal(true);
 
   constructor(http: HttpClient, @Inject('BASE_URL') baseUrl: string) {
-    http.get<WeatherForecast[]>(baseUrl + 'weatherforecast').subscribe(result => {
-      this.forecasts = result;
-    }, error => console.error(error));
+    http.get<WeatherForecast[]>(baseUrl + 'weatherforecast').subscribe({
+      next: (result) => {
+        this.forecasts.set(result);
+        this.loading.set(false);
+      },
+      error: (error) => {
+        console.error(error);
+        this.loading.set(false);
+      }
+    });
   }
 }
 

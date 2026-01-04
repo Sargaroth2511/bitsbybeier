@@ -1,16 +1,17 @@
 import { enableProdMode, provideZoneChangeDetection } from '@angular/core';
-import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
+import { bootstrapApplication } from '@angular/platform-browser';
+import { provideRouter } from '@angular/router';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { provideAnimations } from '@angular/platform-browser/animations';
 
-import { AppModule } from './app/app.module';
+import { AppComponent } from './app/app.component';
+import { routes } from './app/app.routes';
+import { jwtInterceptor } from './app/interceptors/jwt.interceptor.functional';
 import { environment } from './environments/environment';
 
 export function getBaseUrl() {
   return document.getElementsByTagName('base')[0].href;
 }
-
-const providers = [
-  { provide: 'BASE_URL', useFactory: getBaseUrl, deps: [] }
-];
 
 if (environment.production) {
   enableProdMode();
@@ -27,5 +28,14 @@ if (environment.production) {
   };
 }
 
-platformBrowserDynamic(providers).bootstrapModule(AppModule, { applicationProviders: [provideZoneChangeDetection()], })
-  .catch(err => console.log(err));
+bootstrapApplication(AppComponent, {
+  providers: [
+    { provide: 'BASE_URL', useFactory: getBaseUrl, deps: [] },
+    provideZoneChangeDetection({ eventCoalescing: true }),
+    provideRouter(routes),
+    provideHttpClient(
+      withInterceptors([jwtInterceptor])
+    ),
+    provideAnimations()
+  ]
+}).catch(err => console.log(err));

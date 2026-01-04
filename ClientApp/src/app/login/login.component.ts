@@ -1,22 +1,25 @@
-import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, OnInit, Inject, PLATFORM_ID, signal } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
 import { AuthService } from '../services/auth.service';
 import { GoogleSignInService } from '../services/google-signin.service';
+import { LoadingSpinnerComponent } from '../shared/components/loading-spinner.component';
+import { ErrorDisplayComponent } from '../shared/components/error-display.component';
 import { environment } from '../../environments/environment';
 
 /**
  * Component for handling user login via Google Sign-In.
  */
 @Component({
-    selector: 'app-login',
-    templateUrl: './login.component.html',
-    styleUrls: ['./login.component.scss'],
-    standalone: false
+  selector: 'app-login',
+  templateUrl: './login.component.html',
+  styleUrls: ['./login.component.scss'],
+  standalone: true,
+  imports: [LoadingSpinnerComponent, ErrorDisplayComponent]
 })
 export class LoginComponent implements OnInit {
-  loading = false;
-  error = '';
+  loading = signal(false);
+  error = signal('');
   returnUrl = '';
   private isBrowser: boolean;
 
@@ -30,7 +33,7 @@ export class LoginComponent implements OnInit {
     this.isBrowser = isPlatformBrowser(platformId);
     
     // Redirect if already logged in
-    if (this.authService.isAuthenticated()) {
+    if (this.authService.isAuthenticatedValue()) {
       this.router.navigate(['/']);
     }
   }
@@ -61,7 +64,7 @@ export class LoginComponent implements OnInit {
       );
     } catch (error) {
       console.error('Failed to initialize Google Sign-In', error);
-      this.error = 'Failed to load Google Sign-In. Please refresh the page.';
+      this.error.set('Failed to load Google Sign-In. Please refresh the page.');
     }
   }
 
@@ -70,8 +73,8 @@ export class LoginComponent implements OnInit {
    * @param response - Response from Google Sign-In containing the credential.
    */
   private handleGoogleSignIn(response: any): void {
-    this.loading = true;
-    this.error = '';
+    this.loading.set(true);
+    this.error.set('');
 
     this.authService.authenticateWithGoogle(response.credential).subscribe(
       result => {
@@ -79,13 +82,13 @@ export class LoginComponent implements OnInit {
           // Navigate to return url
           this.router.navigate([this.returnUrl]);
         } else {
-          this.error = 'Authentication failed. Please try again.';
-          this.loading = false;
+          this.error.set('Authentication failed. Please try again.');
+          this.loading.set(false);
         }
       },
       error => {
-        this.error = 'Authentication failed. Please try again.';
-        this.loading = false;
+        this.error.set('Authentication failed. Please try again.');
+        this.loading.set(false);
       }
     );
   }

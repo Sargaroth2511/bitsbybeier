@@ -1,51 +1,44 @@
-import { Component, OnDestroy } from '@angular/core';
-import { Router } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { Component } from '@angular/core';
+import { Router, RouterModule } from '@angular/router';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatListModule } from '@angular/material/list';
 import { ThemeService } from '../services/theme.service';
 import { AuthService } from '../services/auth.service';
-import { User } from '../models/auth.model';
 
 /**
  * Navigation menu component with theme toggling and user authentication.
  */
 @Component({
-    selector: 'app-nav-menu',
-    templateUrl: './nav-menu.component.html',
-    styleUrls: ['./nav-menu.component.scss'],
-    standalone: false
+  selector: 'app-nav-menu',
+  templateUrl: './nav-menu.component.html',
+  styleUrls: ['./nav-menu.component.scss'],
+  standalone: true,
+  imports: [
+    RouterModule,
+    MatToolbarModule,
+    MatButtonModule,
+    MatIconModule,
+    MatSidenavModule,
+    MatListModule
+  ]
 })
-export class NavMenuComponent implements OnDestroy {
+export class NavMenuComponent {
   isExpanded = false;
-  isDarkMode = false;
-  currentUser: User | null = null;
-  private themeSubscription: Subscription;
-  private userSubscription: Subscription;
+  
+  // Signals from services
+  isDarkMode = this.themeService.darkMode;
+  currentUser = this.authService.currentUser;
+  isAuthenticated = this.authService.isAuthenticated;
+  isAdmin = this.authService.isAdmin;
 
   constructor(
     private themeService: ThemeService,
     private authService: AuthService,
     private router: Router
-  ) {
-    this.themeSubscription = this.themeService.darkMode$.subscribe(isDark => {
-      this.isDarkMode = isDark;
-    });
-
-    this.userSubscription = this.authService.currentUser$.subscribe(user => {
-      this.currentUser = user;
-    });
-  }
-
-  /**
-   * Cleans up subscriptions when component is destroyed.
-   */
-  ngOnDestroy() {
-    if (this.themeSubscription) {
-      this.themeSubscription.unsubscribe();
-    }
-    if (this.userSubscription) {
-      this.userSubscription.unsubscribe();
-    }
-  }
+  ) {}
 
   /**
    * Collapses the navigation menu.
@@ -74,19 +67,5 @@ export class NavMenuComponent implements OnDestroy {
   logout() {
     this.authService.logout();
     this.router.navigate(['/']);
-  }
-
-  /**
-   * Gets whether a user is currently authenticated.
-   */
-  get isAuthenticated(): boolean {
-    return this.authService.isAuthenticated();
-  }
-
-  /**
-   * Gets whether the current user has Admin role.
-   */
-  get isAdmin(): boolean {
-    return this.authService.getUserRole() === 'Admin';
   }
 }

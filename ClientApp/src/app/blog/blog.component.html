@@ -4,53 +4,30 @@
     <p class="subtitle">Latest posts and updates</p>
   </header>
   
-  <div *ngIf="loading" class="loading-container">
-    <mat-spinner></mat-spinner>
-    <p>Loading posts...</p>
-  </div>
+  @if (loading()) {
+    <app-loading-spinner message="Loading posts..." />
+  }
   
-  <div *ngIf="error" class="alert alert-danger" role="alert">
-    {{ error }}
-  </div>
+  @if (error()) {
+    <app-error-display [message]="error()" />
+  }
   
-  <div *ngIf="!loading && !error" class="blog-posts">
-    <article *ngFor="let post of posts" class="blog-post">
-      <mat-card>
-        <mat-card-header>
-          <mat-card-title>{{ post.title }}</mat-card-title>
-          <mat-card-subtitle *ngIf="post.subtitle">{{ post.subtitle }}</mat-card-subtitle>
-        </mat-card-header>
-        
-        <mat-card-content>
-          <div class="post-meta">
-            <span class="author">
-              <mat-icon>person</mat-icon>
-              {{ post.author }}
-            </span>
-            <span class="date">
-              <mat-icon>calendar_today</mat-icon>
-              {{ post.createdAt | date:'mediumDate' }}
-            </span>
-          </div>
-          
-          <div class="post-content" [class.expanded]="post.expanded">
-            <div [innerHTML]="formatContent(post.content)"></div>
-          </div>
-        </mat-card-content>
-        
-        <mat-card-actions>
-          <button mat-button color="primary" (click)="toggleExpanded(post)">
-            {{ post.expanded ? 'Show Less' : 'Read More' }}
-            <mat-icon>{{ post.expanded ? 'expand_less' : 'expand_more' }}</mat-icon>
-          </button>
-        </mat-card-actions>
-      </mat-card>
-    </article>
-    
-    <div *ngIf="posts.length === 0" class="no-posts">
-      <mat-icon>article</mat-icon>
-      <h2>No posts yet</h2>
-      <p>Check back soon for new content!</p>
+  @if (!loading() && !error()) {
+    <div class="blog-posts">
+      @for (post of posts(); track post.id; let i = $index) {
+        <app-blog-post-card 
+          [post]="post" 
+          [expanded]="post.expanded ?? false"
+          (toggleExpanded)="toggleExpanded(i)">
+          <div [innerHTML]="post.content | markdown"></div>
+        </app-blog-post-card>
+      } @empty {
+        <div class="no-posts">
+          <mat-icon>article</mat-icon>
+          <h2>No posts yet</h2>
+          <p>Check back soon for new content!</p>
+        </div>
+      }
     </div>
-  </div>
+  }
 </div>
