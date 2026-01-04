@@ -4,6 +4,7 @@ using System.Text;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using bitsbybeier.Api.Configuration;
+using bitsbybeier.Domain.Models;
 
 namespace bitsbybeier.Api.Services;
 
@@ -59,5 +60,24 @@ public class JwtTokenService : IJwtTokenService
             claims.Count, _jwtOptions.ExpirationMinutes);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+
+    /// <summary>
+    /// Generates a JWT token for a user.
+    /// </summary>
+    /// <param name="user">User for whom to generate the token.</param>
+    /// <returns>A signed JWT token string.</returns>
+    public string GenerateToken(User user)
+    {
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Email, user.Email),
+            new Claim(ClaimTypes.Name, user.DisplayName),
+            new Claim(ClaimTypes.Role, user.Role.ToString()),
+            new Claim(JwtRegisteredClaimNames.Sub, user.Email)
+        };
+        
+        return GenerateToken(claims);
     }
 }

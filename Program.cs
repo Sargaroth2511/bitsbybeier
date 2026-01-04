@@ -71,6 +71,7 @@ builder.Services.AddScoped<DatabaseInitializer>();
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IContentService, ContentService>();
+builder.Services.AddScoped<IOAuthService, OAuthService>();
 
 // Add MCP Server
 builder.Services.AddMcpServer()
