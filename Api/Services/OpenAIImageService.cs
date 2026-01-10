@@ -36,7 +36,7 @@ public class OpenAIImageService : IOpenAIImageService
         // Validate API key is configured
         if (string.IsNullOrWhiteSpace(_options.ApiKey))
         {
-            throw new InvalidOperationException("OpenAI API key is not configured. Please set the OpenAI:ApiKey configuration value or OPENAI_API_KEY environment variable.");
+            throw new InvalidOperationException("OpenAI API key is not configured. Please set the OPENAI_API_KEY environment variable.");
         }
 
         // Use provided values or defaults from configuration
@@ -164,7 +164,7 @@ public class OpenAIImageService : IOpenAIImageService
         // Limit length and add timestamp for uniqueness
         if (sanitized.Length > 30)
         {
-            sanitized = sanitized.Substring(0, 30);
+            sanitized = sanitized[..30];
         }
 
         return $"dalle-{sanitized}-{DateTime.UtcNow:yyyyMMddHHmmss}.png";
