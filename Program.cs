@@ -71,6 +71,8 @@ builder.Services.Configure<JwtOptions>(
     builder.Configuration.GetSection(JwtOptions.SectionName));
 builder.Services.Configure<GoogleAuthOptions>(
     builder.Configuration.GetSection(GoogleAuthOptions.SectionName));
+builder.Services.Configure<OpenAIOptions>(
+    builder.Configuration.GetSection(OpenAIOptions.SectionName));
 
 // Configure Database
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
@@ -89,6 +91,7 @@ builder.Services.AddScoped<IContentService, ContentService>();
 builder.Services.AddScoped<IOAuthService, OAuthService>();
 builder.Services.AddScoped<IUrlValidationService, UrlValidationService>();
 builder.Services.AddScoped<IImageService, ImageService>();
+builder.Services.AddScoped<IOpenAIImageService, OpenAIImageService>();
 
 // Add HttpClient for image URL downloads
 builder.Services.AddHttpClient();
