@@ -33,7 +33,9 @@ public abstract class BaseController : ControllerBase
     /// <summary>
     /// Gets the current user's ID from claims, if available.
     /// </summary>
-    protected string? UserId => User?.FindFirst("sub")?.Value ?? User?.FindFirst("id")?.Value;
+    protected string? UserId => User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value 
+        ?? User?.FindFirst("sub")?.Value 
+        ?? User?.FindFirst("id")?.Value;
 
     /// <summary>
     /// Gets the current user's email from claims, if available.
@@ -49,4 +51,14 @@ public abstract class BaseController : ControllerBase
     /// Indicates whether the current user is authenticated.
     /// </summary>
     protected bool IsAuthenticated => User?.Identity?.IsAuthenticated ?? false;
+
+    /// <summary>
+    /// Gets the base URL for the current request, ensuring HTTPS in production.
+    /// </summary>
+    protected string GetBaseUrl(HttpRequest request)
+    {
+        // Force HTTPS in production (behind Apache proxy)
+        var scheme = request.Host.Host == "bitsbybeier.de" ? "https" : request.Scheme;
+        return $"{scheme}://{request.Host}";
+    }
 }

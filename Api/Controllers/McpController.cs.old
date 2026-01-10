@@ -30,6 +30,83 @@ public class McpController : BaseController
     }
 
     /// <summary>
+    /// Gets basic MCP server information without authentication.
+    /// This is the discovery endpoint that MCP clients check first.
+    /// </summary>
+    /// <returns>Basic server information.</returns>
+    [HttpGet]
+    [AllowAnonymous]
+    public IActionResult GetServerBasicInfo()
+    {
+        Console.WriteLine("[DCR] MCP endpoint called!");
+        var baseUrl = GetBaseUrl(Request);
+        
+        // Add WWW-Authenticate header for OAuth Protected Resource Metadata discovery
+        Response.Headers.Append("WWW-Authenticate", 
+            $"Bearer realm=\"BitsbyBeier MCP\", oauth-protected-source=\"{baseUrl}/.well-known/oauth-protected-resource/mcp\"");
+        Console.WriteLine($"[DCR] Added WWW-Authenticate header: {baseUrl}/.well-known/oauth-protected-resource/mcp");
+        
+        return Ok(new 
+        { 
+            name = "BitsbyBeier Content MCP Server",
+            version = "1.0.0",
+            description = "MCP server for content management operations. Requires OAuth authentication.",
+            capabilities = new
+            {
+                experimental = new { }
+            },
+            serverInfo = new
+            {
+                name = "BitsbyBeier",
+                version = "1.0.0"
+            }
+        });
+    }
+
+    /// <summary>
+    /// Gets OAuth Protected Resource Metadata for MCP client discovery (RFC 9728).
+    /// This endpoint allows MCP clients like ChatGPT Desktop to discover authorization servers.
+    /// </summary>
+    /// <returns>OAuth Protected Resource metadata.</returns>
+    [HttpGet(".well-known/oauth-protected-resource")]
+    [AllowAnonymous]
+    public IActionResult GetOAuthProtectedResource()
+    {
+        var baseUrl = GetBaseUrl(Request);
+        
+        return Ok(new
+        {
+            resource = $"{baseUrl}/api/mcp",
+            authorization_servers = new[] { baseUrl }
+        });
+    }
+
+    /// <summary>
+    /// Gets OAuth authorization server metadata for MCP client discovery.
+    /// This endpoint allows MCP clients to discover OAuth endpoints.
+    /// </summary>
+    /// <returns>OAuth server metadata.</returns>
+    [HttpGet(".well-known/oauth-authorization-server")]
+    [AllowAnonymous]
+    public IActionResult GetOAuthMetadata()
+    {
+        var baseUrl = GetBaseUrl(Request);
+        
+        return Ok(new
+        {
+            issuer = baseUrl,
+            authorization_endpoint = $"{baseUrl}/oauth/authorize",
+            token_endpoint = $"{baseUrl}/oauth/token",
+            revocation_endpoint = $"{baseUrl}/oauth/revoke",
+            registration_endpoint = $"{baseUrl}/oauth/register",
+            response_types_supported = new[] { "code" },
+            grant_types_supported = new[] { "authorization_code", "refresh_token" },
+            code_challenge_methods_supported = new[] { "S256" },
+            token_endpoint_auth_methods_supported = new[] { "client_secret_post", "client_secret_basic" }
+        });
+    }
+
+    /// <summary>
     /// Gets information about the MCP server and available tools.
     /// </summary>
     /// <returns>Server information and tool list.</returns>

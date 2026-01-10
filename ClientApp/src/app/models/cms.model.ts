@@ -22,6 +22,8 @@ export interface CmsContent {
   updatedAt?: string;
   /** ISO 8601 timestamp when content should be published */
   publishAt?: string;
+  /** IDs of attached images */
+  imageIds?: number[];
 }
 
 /**

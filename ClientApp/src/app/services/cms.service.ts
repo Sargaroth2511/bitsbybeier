@@ -61,4 +61,18 @@ export class CmsService {
   deleteContent(id: number): Observable<void> {
     return this.http.delete<void>(`${API_ENDPOINTS.CMS.CONTENT}/${id}`);
   }
+
+  /**
+   * Uploads an image.
+   */
+  uploadImage(request: { base64Data: string, fileName: string, contentType: string }): Observable<{id: number, fileName: string, fileSize: number, contentType: string}> {
+    return this.http.post<{id: number, fileName: string, fileSize: number, contentType: string}>('/api/images/upload', request);
+  }
+
+  /**
+   * Gets image metadata.
+   */
+  getImageMetadata(id: number): Observable<{id: number, fileName: string, fileSize: number, contentType: string}> {
+    return this.http.get<{id: number, fileName: string, fileSize: number, contentType: string}>(`/api/images/${id}/metadata`);
+  }
 }

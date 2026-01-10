@@ -1,4 +1,5 @@
 import { Component, OnInit, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -34,7 +35,8 @@ export class DraftsComponent implements OnInit {
 
   constructor(
     private cmsService: CmsService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -71,6 +73,13 @@ export class DraftsComponent implements OnInit {
       newDrafts[index] = { ...newDrafts[index], expanded: !newDrafts[index].expanded };
       return newDrafts;
     });
+  }
+
+  /**
+   * Navigates to CMS to edit the draft.
+   */
+  editDraft(draft: CmsContent): void {
+    this.router.navigate(['/cms', draft.id]);
   }
 
   /**

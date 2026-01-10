@@ -4,15 +4,22 @@ import { LoginComponent } from './login/login.component';
 import { BlogComponent } from './blog/blog.component';
 import { CmsComponent } from './cms/cms.component';
 import { DraftsComponent } from './drafts/drafts.component';
+import { OAuthConsentComponent } from './oauth-consent/oauth-consent.component';
 import { authGuard } from './guards/auth.guard.functional';
 import { adminGuard } from './guards/admin.guard.functional';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent, pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
+  { path: 'oauth/authorize', component: OAuthConsentComponent, canActivate: [authGuard] },
   { path: 'blog', component: BlogComponent },
   { 
     path: 'cms', 
+    component: CmsComponent, 
+    canActivate: [authGuard, adminGuard] 
+  },
+  { 
+    path: 'cms/:id', 
     component: CmsComponent, 
     canActivate: [authGuard, adminGuard] 
   },

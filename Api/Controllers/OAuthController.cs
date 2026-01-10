@@ -3,7 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using bitsbybeier.Api.Services;
 using bitsbybeier.Data;
+using bitsbybeier.Domain.Models;
 using System.Text;
+using System.Text.Json;
 
 namespace bitsbybeier.Api.Controllers;
 
@@ -23,6 +25,72 @@ public class OAuthController : BaseController
         : base(logger, context)
     {
         _oauthService = oauthService;
+    }
+    
+    /// <summary>
+    /// OAuth 2.0 metadata discovery endpoint.
+    /// </summary>
+    [HttpGet("/.well-known/oauth-authorization-server")]
+    [AllowAnonymous]
+    public IActionResult GetMetadata()
+    {
+        var baseUrl = GetBaseUrl(Request);
+        
+        return Ok(new
+        {
+            issuer = baseUrl,
+            authorization_endpoint = $"{baseUrl}/oauth/authorize",
+            token_endpoint = $"{baseUrl}/oauth/token",
+            revocation_endpoint = $"{baseUrl}/oauth/revoke",
+            registration_endpoint = $"{baseUrl}/oauth/register", // DCR endpoint
+            response_types_supported = new[] { "code" },
+            grant_types_supported = new[] { "authorization_code", "refresh_token" },
+            code_challenge_methods_supported = new[] { "S256" },
+            token_endpoint_auth_methods_supported = new[] { "client_secret_basic", "client_secret_post" }
+        });
+    }
+    
+    /// <summary>
+    /// Dynamic Client Registration endpoint (RFC 7591).
+    /// Allows MCP clients like ChatGPT Desktop to automatically register as OAuth clients.
+    /// </summary>
+    [HttpPost("register")]
+    [AllowAnonymous]
+    public async Task<IActionResult> RegisterClient([FromBody] DynamicClientRegistrationRequest request)
+    {
+        Logger.LogInformation("Dynamic Client Registration request received: {ClientName}", request.client_name);
+        
+        // Generate client credentials
+        var clientId = Guid.NewGuid().ToString("N");
+        var clientSecret = GenerateClientSecret();
+        
+        var client = new OAuthClient
+        {
+            ClientId = clientId,
+            ClientSecret = OAuthService.HashClientSecret(clientSecret),
+            ClientName = request.client_name ?? "MCP Client",
+            RedirectUris = JsonSerializer.Serialize(request.redirect_uris ?? new List<string>()),
+            AllowedScopes = JsonSerializer.Serialize(request.scope?.Split(' ').ToList() ?? new List<string> { "mcp:read", "mcp:write" }),
+            Active = true,
+            CreatedByUserId = null // DCR clients have no specific owner (system-created)
+        };
+        
+        Context.OAuthClients.Add(client);
+        await Context.SaveChangesAsync();
+        
+        Logger.LogInformation("OAuth client registered via DCR: {ClientId}", clientId);
+        
+        // Return response per RFC 7591
+        return Created($"/oauth/clients/{clientId}", new
+        {
+            client_id = clientId,
+            client_secret = clientSecret,
+            client_name = client.ClientName,
+            redirect_uris = request.redirect_uris,
+            scope = request.scope ?? "mcp:read mcp:write",
+            token_endpoint_auth_method = "client_secret_post",
+            grant_types = new[] { "authorization_code", "refresh_token" }
+        });
     }
     
     /// <summary>
@@ -92,14 +160,33 @@ public class OAuthController : BaseController
             code_challenge,
             code_challenge_method);
         
-        // Redirect back to client with code
+        // Build redirect URL
         var redirectUrl = $"{redirect_uri}?code={code}";
         if (!string.IsNullOrEmpty(state))
         {
             redirectUrl += $"&state={state}";
         }
         
-        return Redirect(redirectUrl);
+        // Return as plain text for Angular to handle the redirect
+        return Content(redirectUrl, "text/plain");
+    }
+    
+    /// <summary>
+    /// OAuth 2.0 authorization endpoint (API version).
+    /// Called by Angular app with JWT token in headers.
+    /// </summary>
+    [HttpGet("/api/oauth/authorize")]
+    [Authorize]
+    public async Task<IActionResult> AuthorizeApi(
+        [FromQuery] string response_type,
+        [FromQuery] string client_id,
+        [FromQuery] string redirect_uri,
+        [FromQuery] string? scope,
+        [FromQuery] string? state,
+        [FromQuery] string? code_challenge,
+        [FromQuery] string? code_challenge_method)
+    {
+        return await Authorize(response_type, client_id, redirect_uri, scope, state, code_challenge, code_challenge_method);
     }
     
     /// <summary>
@@ -227,4 +314,20 @@ public class OAuthController : BaseController
         
         return Ok();
     }
+    
+    private static string GenerateClientSecret()
+    {
+        var randomBytes = new byte[32];
+        using var rng = System.Security.Cryptography.RandomNumberGenerator.Create();
+        rng.GetBytes(randomBytes);
+        return Convert.ToBase64String(randomBytes);
+    }
 }
+
+/// <summary>
+/// Dynamic Client Registration request per RFC 7591.
+/// </summary>
+public record DynamicClientRegistrationRequest(
+    string? client_name,
+    List<string>? redirect_uris,
+    string? scope);

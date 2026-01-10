@@ -1,15 +1,30 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using ModelContextProtocol.Protocol;
+using ModelContextProtocol.Server;
 using bitsbybeier.Api.Configuration;
 using bitsbybeier.Api.Services;
 using bitsbybeier.Api.Mcp;
 using bitsbybeier.Data;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure forwarded headers for proxy support (Apache)
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = 
+        ForwardedHeaders.XForwardedFor | 
+        ForwardedHeaders.XForwardedProto | 
+        ForwardedHeaders.XForwardedHost;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+    options.ForwardLimit = null; // Allow unlimited proxies
+});
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -72,10 +87,28 @@ builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IContentService, ContentService>();
 builder.Services.AddScoped<IOAuthService, OAuthService>();
+builder.Services.AddScoped<IUrlValidationService, UrlValidationService>();
+builder.Services.AddScoped<IImageService, ImageService>();
 
-// Add MCP Server
-builder.Services.AddMcpServer()
-    .WithTools<ContentMcpTools>();
+// Add HttpClient for image URL downloads
+builder.Services.AddHttpClient();
+
+// Add MCP Server with HTTP transport
+builder.Services.AddMcpServer(options =>
+{
+    options.ServerInfo = new Implementation
+    {
+        Name = "BitsbyBeier Content MCP Server",
+        Version = "1.0.0"
+    };
+})
+.WithHttpTransport(httpOptions =>
+{
+    httpOptions.Stateless = false; // Enable stateful sessions
+    httpOptions.IdleTimeout = TimeSpan.FromMinutes(30);
+})
+.AddAuthorizationFilters() // Enable [Authorize] on tools
+.WithTools<ContentMcpTools>();
 
 // Add CORS
 builder.Services.AddCors(options =>
@@ -115,6 +148,24 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = jwtAudience,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret))
     };
+    
+    // Handle OAuth authorize endpoint - redirect to login page
+    options.Events = new JwtBearerEvents
+    {
+        OnChallenge = context =>
+        {
+            // If this is an OAuth authorize request, redirect to Angular login with return URL
+            if (context.Request.Path.StartsWithSegments("/oauth/authorize"))
+            {
+                context.HandleResponse();
+                var returnUrl = context.Request.QueryString.HasValue 
+                    ? $"/oauth/authorize{context.Request.QueryString}" 
+                    : "/oauth/authorize";
+                context.Response.Redirect($"/?returnUrl={Uri.EscapeDataString(returnUrl)}");
+            }
+            return Task.CompletedTask;
+        }
+    };
 })
 .AddGoogle(options =>
 {
@@ -126,6 +177,9 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
+
+// Use forwarded headers (must be before other middleware)
+app.UseForwardedHeaders();
 
 // Initialize database with migrations and seed data
 using (var scope = app.Services.CreateScope())
@@ -164,6 +218,9 @@ app.UseRouting();
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Map MCP server endpoint
+app.MapMcp("/api/mcp");
 
 app.MapControllers();
 app.MapFallbackToFile("index.html");

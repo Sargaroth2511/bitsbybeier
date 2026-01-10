@@ -39,7 +39,7 @@ public class OAuthClient
     
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     
-    public int CreatedByUserId { get; set; }
+    public int? CreatedByUserId { get; set; }
     
     public User? CreatedBy { get; set; }
 }

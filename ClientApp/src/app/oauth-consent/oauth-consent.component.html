@@ -1,0 +1,15 @@
+<div class="oauth-consent">
+  <div class="consent-card">
+    <div *ngIf="loading" class="loading">
+      <div class="spinner"></div>
+      <h2>Authorizing...</h2>
+      <p>Please wait while we connect to ChatGPT</p>
+    </div>
+    
+    <div *ngIf="error" class="error">
+      <h2>Authorization Error</h2>
+      <p>{{ error }}</p>
+      <a href="/" class="btn">Return Home</a>
+    </div>
+  </div>
+</div>

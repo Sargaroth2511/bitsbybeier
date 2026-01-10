@@ -24,6 +24,8 @@ export class MarkdownPipe implements PipeTransform {
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       // Italic
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      // Images - wrap in container for proper sizing
+      .replace(/!\[([^\]]*)\]\(([^\)]+)\)/g, '<div class="markdown-image-container"><img src="$2" alt="$1" loading="lazy"></div>')
       // Links
       .replace(/\[([^\]]+)\]\(([^\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
       // Line breaks

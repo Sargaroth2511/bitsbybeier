@@ -37,6 +37,12 @@ public record ContentRequest
     /// Whether the content should be created as a draft (default: true).
     /// </summary>
     public bool Draft { get; init; } = true;
+    
+    /// <summary>
+    /// Optional list of image IDs to attach to this content.
+    /// Images must be uploaded separately before being attached.
+    /// </summary>
+    public List<int>? ImageIds { get; init; }
 }
 
 /// <summary>
@@ -93,6 +99,11 @@ public record ContentResponse
     /// Timestamp when the content should be published.
     /// </summary>
     public DateTime? PublishAt { get; init; }
+    
+    /// <summary>
+    /// List of attached image IDs.
+    /// </summary>
+    public List<int>? ImageIds { get; init; }
 }
 
 /// <summary>

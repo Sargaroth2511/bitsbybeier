@@ -60,6 +60,7 @@ public class CmsController : BaseController
     public async Task<IActionResult> GetContent()
     {
         var contents = await Context.Contents
+            .Include(c => c.Images)
             .OrderByDescending(c => c.CreatedAt)
             .ToListAsync();
 
@@ -74,7 +75,8 @@ public class CmsController : BaseController
             Active = c.Active,
             CreatedAt = c.CreatedAt,
             UpdatedAt = c.UpdatedAt,
-            PublishAt = c.PublishAt
+            PublishAt = c.PublishAt,
+            ImageIds = c.Images.Select(i => i.Id).ToList()
         });
 
         Logger.LogDebug("Retrieved {Count} content items", contents.Count);
@@ -95,6 +97,7 @@ public class CmsController : BaseController
     public async Task<IActionResult> GetDraftContent()
     {
         var contents = await Context.Contents
+            .Include(c => c.Images)
             .Where(c => c.Draft)
             .OrderByDescending(c => c.CreatedAt)
             .ToListAsync();
@@ -110,7 +113,8 @@ public class CmsController : BaseController
             Active = c.Active,
             CreatedAt = c.CreatedAt,
             UpdatedAt = c.UpdatedAt,
-            PublishAt = c.PublishAt
+            PublishAt = c.PublishAt,
+            ImageIds = c.Images.Select(i => i.Id).ToList()
         });
 
         Logger.LogDebug("Retrieved {Count} draft content items", contents.Count);
@@ -128,6 +132,7 @@ public class CmsController : BaseController
     public async Task<IActionResult> GetPublicContent()
     {
         var contents = await Context.Contents
+            .Include(c => c.Images)
             .Where(c => !c.Draft && c.Active)
             .OrderByDescending(c => c.CreatedAt)
             .ToListAsync();
@@ -143,7 +148,8 @@ public class CmsController : BaseController
             Active = c.Active,
             CreatedAt = c.CreatedAt,
             UpdatedAt = c.UpdatedAt,
-            PublishAt = c.PublishAt
+            PublishAt = c.PublishAt,
+            ImageIds = c.Images.Select(i => i.Id).ToList()
         });
 
         Logger.LogDebug("Retrieved {Count} public content items", contents.Count);
@@ -167,6 +173,11 @@ public class CmsController : BaseController
     public async Task<IActionResult> CreateContent(ContentRequest request)
     {
         var content = await _contentService.CreateContentAsync(request);
+        
+        // Reload with images
+        var contentWithImages = await Context.Contents
+            .Include(c => c.Images)
+            .FirstOrDefaultAsync(c => c.Id == content.Id);
 
         var response = new ContentResponse
         {
@@ -179,7 +190,8 @@ public class CmsController : BaseController
             Active = content.Active,
             CreatedAt = content.CreatedAt,
             UpdatedAt = content.UpdatedAt,
-            PublishAt = content.PublishAt
+            PublishAt = content.PublishAt,
+            ImageIds = contentWithImages?.Images.Select(i => i.Id).ToList() ?? new List<int>()
         };
 
         Logger.LogInformation("Content created with ID {ContentId}", content.Id);

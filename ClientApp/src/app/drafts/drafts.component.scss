@@ -36,3 +36,17 @@
 .no-drafts {
   @include utils.empty-state;
 }
+
+// Scoped styles for responsive images in drafts
+:host {
+  .responsive-image {
+    max-width: 100%;
+    max-height: 80vh;
+    height: auto;
+    width: auto;
+    object-fit: contain;
+    display: block;
+    margin: 1rem auto;
+    border-radius: 4px;
+  }
+}

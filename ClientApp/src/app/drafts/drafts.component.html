@@ -25,8 +25,10 @@
           [showToggle]="true"
           (toggleExpanded)="toggleExpanded(i)">
           <div [innerHTML]="draft.content | markdown"></div>
-          <div actions class="action-group">
-            <button mat-raised-button color="primary" (click)="publishNow(draft)">
+          <div actions class="action-group">            <button mat-raised-button (click)="editDraft(draft)">
+              <mat-icon>edit</mat-icon>
+              Edit
+            </button>            <button mat-raised-button color="primary" (click)="publishNow(draft)">
               <mat-icon>publish</mat-icon>
               Publish Now
             </button>

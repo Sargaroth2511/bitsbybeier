@@ -148,3 +148,39 @@ code {
     margin-bottom: 1rem !important;
   }
 }
+
+/* Markdown content image container - global styles for dynamic content */
+.markdown-image-container {
+  max-width: 100%;
+  max-height: 80vh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 1rem auto;
+  border-radius: 4px;
+  
+  img {
+    max-width: 100%;
+    max-height: 80vh;
+    height: auto;
+    width: auto;
+    object-fit: contain;
+    display: block;
+  }
+}
+
+/* Direct image styling for content-image class and all content images */
+.content-image,
+.content img,
+.blog-content img,
+div[class*='content'] img {
+  max-width: 100% !important;
+  max-height: 80vh !important;
+  height: auto !important;
+  width: auto !important;
+  object-fit: contain !important;
+  display: block !important;
+  margin: 1rem auto !important;
+  border-radius: 4px;
+}

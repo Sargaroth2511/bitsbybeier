@@ -45,11 +45,12 @@ public class ContentImage
     
     /// <summary>
     /// Foreign key to the associated content item.
+    /// Nullable to allow uploading images before attaching them to content.
     /// </summary>
-    public int ContentId { get; set; }
+    public int? ContentId { get; set; }
     
     /// <summary>
     /// Navigation property to the associated content item.
     /// </summary>
-    public Content Content { get; set; } = null!;
+    public Content? Content { get; set; }
 }

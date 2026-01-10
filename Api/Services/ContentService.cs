@@ -12,16 +12,22 @@ public class ContentService : IContentService
 {
     private readonly ApplicationDbContext _context;
     private readonly ILogger<ContentService> _logger;
+    private readonly IUrlValidationService _urlValidation;
 
     /// <summary>
     /// Initializes a new instance of the ContentService.
     /// </summary>
     /// <param name="context">Database context.</param>
     /// <param name="logger">Logger instance.</param>
-    public ContentService(ApplicationDbContext context, ILogger<ContentService> logger)
+    /// <param name="urlValidation">URL validation service.</param>
+    public ContentService(
+        ApplicationDbContext context, 
+        ILogger<ContentService> logger,
+        IUrlValidationService urlValidation)
     {
         _context = context;
         _logger = logger;
+        _urlValidation = urlValidation;
     }
 
     /// <summary>
@@ -33,12 +39,33 @@ public class ContentService : IContentService
     {
         _logger.LogInformation("Creating new content with title: {Title}, draft: {Draft}", request.Title, request.Draft);
 
+        // Sanitize content to remove malicious URLs
+        var sanitizedContent = _urlValidation.SanitizeMarkdown(request.Content);
+        if (sanitizedContent != request.Content)
+        {
+            _logger.LogWarning("Content contained unsafe URLs that were sanitized");
+        }
+
+        // Check for duplicate content created in the last 30 seconds to prevent double-creation from MCP client retries
+        var recentDuplicate = await _context.Contents
+            .Where(c => c.Title == request.Title 
+                     && c.Author == request.Author 
+                     && c.CreatedAt > DateTime.UtcNow.AddSeconds(-30))
+            .OrderByDescending(c => c.CreatedAt)
+            .FirstOrDefaultAsync();
+
+        if (recentDuplicate != null)
+        {
+            _logger.LogWarning("Duplicate content detected within 30 seconds. Returning existing content ID: {ContentId}", recentDuplicate.Id);
+            return recentDuplicate;
+        }
+
         var content = new Content
         {
             Author = request.Author,
             Title = request.Title,
             Subtitle = request.Subtitle,
-            ContentText = request.Content,
+            ContentText = sanitizedContent,
             Draft = request.Draft,
             Active = true,
             CreatedAt = DateTime.UtcNow
@@ -47,9 +74,40 @@ public class ContentService : IContentService
         _context.Contents.Add(content);
         await _context.SaveChangesAsync();
 
+        // Attach images if provided
+        if (request.ImageIds != null && request.ImageIds.Count > 0)
+        {
+            await AttachImagesToContentAsync(content.Id, request.ImageIds);
+        }
+
         _logger.LogInformation("Content created successfully with ID: {ContentId}", content.Id);
 
         return content;
+    }
+    
+    /// <summary>
+    /// Attaches multiple images to a content item.
+    /// </summary>
+    private async Task AttachImagesToContentAsync(int contentId, List<int> imageIds)
+    {
+        var images = await _context.ContentImages
+            .Where(i => imageIds.Contains(i.Id))
+            .ToListAsync();
+            
+        if (images.Count != imageIds.Count)
+        {
+            var foundIds = images.Select(i => i.Id).ToList();
+            var missingIds = imageIds.Except(foundIds).ToList();
+            _logger.LogWarning("Some image IDs were not found: {MissingIds}", string.Join(", ", missingIds));
+        }
+        
+        foreach (var image in images)
+        {
+            image.ContentId = contentId;
+        }
+        
+        await _context.SaveChangesAsync();
+        _logger.LogInformation("Attached {Count} images to content {ContentId}", images.Count, contentId);
     }
 
     /// <summary>

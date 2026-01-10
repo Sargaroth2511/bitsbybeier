@@ -50,6 +50,64 @@
           }
         </mat-form-field>
 
+        <!-- Image Upload Section -->
+        <mat-card class="image-upload-section">
+          <mat-card-header>
+            <mat-card-title>Images</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <!-- Current Images -->
+            @if (uploadedImages().length > 0) {
+              <div class="uploaded-images">
+                @for (image of uploadedImages(); track image.id) {
+                  <div class="image-item">
+                    <img [src]="'/api/images/' + image.id" [alt]="image.fileName" />
+                    <div class="image-info">
+                      <span class="filename">{{ image.fileName }}</span>
+                      <span class="filesize">{{ formatFileSize(image.fileSize) }}</span>
+                    </div>
+                    <div class="image-actions">
+                      <button mat-icon-button color="primary" type="button" 
+                              (click)="insertImageIntoContent(image.id, image.fileName)"
+                              matTooltip="Insert into content">
+                        <mat-icon>add_photo_alternate</mat-icon>
+                      </button>
+                      <button mat-icon-button color="warn" type="button" 
+                              (click)="removeImage(image.id)"
+                              matTooltip="Remove image">
+                        <mat-icon>delete</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+
+            <!-- Upload Area -->
+            <div class="upload-area" 
+                 (drop)="onFileDrop($event)" 
+                 (dragover)="onDragOver($event)"
+                 (dragleave)="onDragLeave($event)">
+              <input #fileInput type="file" accept="image/*" multiple 
+                     (change)="onFileSelected($event)" style="display: none" />
+              <mat-icon>cloud_upload</mat-icon>
+              <p>Drag & drop images here or</p>
+              <button mat-raised-button type="button" (click)="fileInput.click()">
+                <mat-icon>add_photo_alternate</mat-icon>
+                Select Images
+              </button>
+              <p class="hint">Max 10MB per image. Supported: JPEG, PNG, GIF, WebP, SVG</p>
+            </div>
+
+            @if (uploadingImages()) {
+              <div class="uploading-status">
+                <mat-icon class="spinning">sync</mat-icon>
+                <span>Uploading images...</span>
+              </div>
+            }
+          </mat-card-content>
+        </mat-card>
+
         <!-- Markdown Help Section -->
         <mat-card class="markdown-help">
           <mat-card-content>
