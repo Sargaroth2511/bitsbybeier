@@ -157,6 +157,48 @@ public class CmsController : BaseController
     }
 
     /// <summary>
+    /// Gets a single public (non-draft) content item by ID.
+    /// </summary>
+    /// <param name="id">Content item ID.</param>
+    /// <returns>The requested public content item.</returns>
+    /// <response code="200">Returns the requested content item.</response>
+    /// <response code="404">If content item not found or not public.</response>
+    [HttpGet("content/public/{id}")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(ContentResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetPublicContentById(int id)
+    {
+        var content = await Context.Contents
+            .Include(c => c.Images)
+            .FirstOrDefaultAsync(c => c.Id == id && !c.Draft && c.Active);
+
+        if (content == null)
+        {
+            Logger.LogWarning("Public content not found with ID {ContentId}", id);
+            return NotFound(new ErrorResponse { Message = $"Content with ID {id} not found or not published" });
+        }
+
+        var response = new ContentResponse
+        {
+            Id = content.Id,
+            Author = content.Author,
+            Title = content.Title,
+            Subtitle = content.Subtitle,
+            Content = content.ContentText,
+            Draft = content.Draft,
+            Active = content.Active,
+            CreatedAt = content.CreatedAt,
+            UpdatedAt = content.UpdatedAt,
+            PublishAt = content.PublishAt,
+            ImageIds = content.Images.Select(i => i.Id).ToList()
+        };
+
+        Logger.LogDebug("Retrieved public content with ID {ContentId}", id);
+        return Ok(response);
+    }
+
+    /// <summary>
     /// Creates a new content item.
     /// </summary>
     /// <param name="request">Content creation request with all required fields.</param>

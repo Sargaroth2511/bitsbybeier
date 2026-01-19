@@ -1,0 +1,45 @@
+<div class="blog-detail-container">
+  @if (loading()) {
+  <app-loading-spinner message="Loading post..." />
+  }
+
+  @if (error()) {
+  <app-error-display [message]="error()" />
+  <div class="actions">
+    <button mat-raised-button color="primary" (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+      Back to Blog
+    </button>
+  </div>
+  }
+
+  @if (!loading() && !error() && post()) {
+  <article class="blog-post">
+    <header class="post-header">
+      <button mat-button color="primary" (click)="goBack()" class="back-button">
+        <mat-icon>arrow_back</mat-icon>
+        Back to Blog
+      </button>
+      
+      <h1 class="post-title">{{ post()!.title }}</h1>
+      
+      @if (post()!.subtitle) {
+      <p class="post-subtitle">{{ post()!.subtitle }}</p>
+      }
+      
+      <div class="post-meta">
+        <span class="author">
+          <mat-icon>person</mat-icon>
+          {{ post()!.author }}
+        </span>
+        <span class="date">
+          <mat-icon>calendar_today</mat-icon>
+          {{ post()!.createdAt | date:'mediumDate' }}
+        </span>
+      </div>
+    </header>
+
+    <div class="post-content" [innerHTML]="post()!.content | markdown"></div>
+  </article>
+  }
+</div>

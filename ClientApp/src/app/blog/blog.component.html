@@ -17,6 +17,12 @@
     @for (post of posts(); track post.id; let i = $index) {
     <app-blog-post-card [post]="post" [expanded]="post.expanded ?? false" (toggleExpanded)="toggleExpanded(i)">
       <div [innerHTML]="post.content | markdown"></div>
+      <div actions>
+        <button mat-raised-button color="primary" (click)="viewPost(post.id)">
+          Read Full Article
+          <mat-icon>arrow_forward</mat-icon>
+        </button>
+      </div>
     </app-blog-post-card>
     } @empty {
     <div class="no-posts">

@@ -35,6 +35,13 @@ export class CmsService {
   }
 
   /**
+   * Gets a single public (published) content item by ID.
+   */
+  getPublicContentById(id: number): Observable<CmsContent> {
+    return this.http.get<CmsContent>(`${API_ENDPOINTS.CMS.PUBLIC}/${id}`);
+  }
+
+  /**
    * Creates a new content item.
    */
   createContent(request: ContentRequest): Observable<CmsContent> {

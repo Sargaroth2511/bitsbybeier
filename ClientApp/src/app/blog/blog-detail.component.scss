@@ -1,0 +1,146 @@
+.blog-detail-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.blog-post {
+  background: var(--surface-color, #fff);
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.post-header {
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--divider-color, #e0e0e0);
+  padding-bottom: 1.5rem;
+}
+
+.back-button {
+  margin-bottom: 1rem;
+}
+
+.post-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0.5rem 0;
+  color: var(--text-primary, #333);
+  line-height: 1.2;
+}
+
+.post-subtitle {
+  font-size: 1.25rem;
+  color: var(--text-secondary, #666);
+  margin: 0.5rem 0;
+  line-height: 1.4;
+}
+
+.post-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-top: 1rem;
+  font-size: 0.95rem;
+  color: var(--text-secondary, #666);
+}
+
+.post-meta span {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.post-meta mat-icon {
+  font-size: 1.2rem;
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+.post-content {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: var(--text-primary, #333);
+}
+
+.post-content ::ng-deep h1,
+.post-content ::ng-deep h2,
+.post-content ::ng-deep h3 {
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  color: var(--text-primary, #333);
+}
+
+.post-content ::ng-deep h1 {
+  font-size: 2rem;
+}
+
+.post-content ::ng-deep h2 {
+  font-size: 1.5rem;
+}
+
+.post-content ::ng-deep h3 {
+  font-size: 1.25rem;
+}
+
+.post-content ::ng-deep p {
+  margin-bottom: 1rem;
+}
+
+.post-content ::ng-deep img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1.5rem auto;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.post-content ::ng-deep a {
+  color: var(--primary-color, #1976d2);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s;
+}
+
+.post-content ::ng-deep a:hover {
+  border-bottom-color: var(--primary-color, #1976d2);
+}
+
+.post-content ::ng-deep strong {
+  font-weight: 600;
+  color: var(--text-primary, #333);
+}
+
+.post-content ::ng-deep em {
+  font-style: italic;
+}
+
+.actions {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .blog-detail-container {
+    padding: 1rem 0.5rem;
+  }
+
+  .blog-post {
+    padding: 1.5rem;
+  }
+
+  .post-title {
+    font-size: 2rem;
+  }
+
+  .post-subtitle {
+    font-size: 1.1rem;
+  }
+
+  .post-content {
+    font-size: 1rem;
+  }
+}
