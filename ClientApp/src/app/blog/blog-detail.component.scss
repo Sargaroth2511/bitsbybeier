@@ -25,13 +25,13 @@
   font-size: 2.5rem;
   font-weight: 700;
   margin: 0.5rem 0;
-  color: var(--text-primary, #333);
+  color: var(--text-color);
   line-height: 1.2;
 }
 
 .post-subtitle {
   font-size: 1.25rem;
-  color: var(--text-secondary, #666);
+  color: var(--text-secondary);
   margin: 0.5rem 0;
   line-height: 1.4;
 }
@@ -42,7 +42,7 @@
   gap: 1.5rem;
   margin-top: 1rem;
   font-size: 0.95rem;
-  color: var(--text-secondary, #666);
+  color: var(--text-secondary);
 }
 
 .post-meta span {
@@ -60,7 +60,7 @@
 .post-content {
   font-size: 1.1rem;
   line-height: 1.8;
-  color: var(--text-primary, #333);
+  color: var(--text-color);
 }
 
 .post-content ::ng-deep h1,
@@ -69,7 +69,7 @@
   margin-top: 1.5rem;
   margin-bottom: 1rem;
   font-weight: 600;
-  color: var(--text-primary, #333);
+  color: var(--text-color);
 }
 
 .post-content ::ng-deep h1 {
@@ -98,19 +98,19 @@
 }
 
 .post-content ::ng-deep a {
-  color: var(--primary-color, #1976d2);
+  color: var(--link-color);
   text-decoration: none;
   border-bottom: 1px solid transparent;
   transition: border-color 0.2s;
 }
 
 .post-content ::ng-deep a:hover {
-  border-bottom-color: var(--primary-color, #1976d2);
+  border-bottom-color: var(--link-hover);
 }
 
 .post-content ::ng-deep strong {
   font-weight: 600;
-  color: var(--text-primary, #333);
+  color: var(--text-color);
 }
 
 .post-content ::ng-deep em {
