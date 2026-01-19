@@ -40,8 +40,10 @@ export class BlogDetailComponent implements OnInit {
   ngOnInit(): void {
     this.route.params.subscribe(params => {
       const id = +params['id'];
-      if (id) {
+      if (!isNaN(id) && id > 0) {
         this.loadPost(id);
+      } else {
+        this.error.set('Invalid blog post ID');
       }
     });
   }
