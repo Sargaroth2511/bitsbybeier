@@ -34,19 +34,6 @@ import { CmsContent } from '../../models/cms.model';
           </div>
         }
 
-        @if (post().imageIds && post().imageIds!.length > 0) {
-          <div class="images-container">
-            @for (imageId of post().imageIds; track imageId) {
-              <img 
-                [src]="'/api/images/' + imageId" 
-                [alt]="'Image ' + imageId"
-                class="content-image"
-                loading="lazy"
-              />
-            }
-          </div>
-        }
-
         <div class="post-meta">
           <span class="author">
             <mat-icon>person</mat-icon>
@@ -87,26 +74,6 @@ import { CmsContent } from '../../models/cms.model';
 
     .badge-container {
       margin-bottom: 1rem;
-    }
-
-    .images-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
-    }
-
-    .content-image {
-      max-width: 200px;
-      max-height: 200px;
-      object-fit: cover;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-
-    .content-image:hover {
-      transform: scale(1.05);
     }
 
     .post-meta {

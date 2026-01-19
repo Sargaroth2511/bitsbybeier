@@ -1,33 +1,36 @@
-937<div class="blog-container">
+<div class="blog-container">
   <header class="blog-header">
     <h1>Blog</h1>
     <p class="subtitle">Latest posts and updates</p>
   </header>
-  
+
   @if (loading()) {
-    <app-loading-spinner message="Loading posts..." />
+  <app-loading-spinner message="Loading posts..." />
   }
-  
+
   @if (error()) {
-    <app-error-display [message]="error()" />
+  <app-error-display [message]="error()" />
   }
-  
+
   @if (!loading() && !error()) {
-    <div class="blog-posts">
-      @for (post of posts(); track post.id; let i = $index) {
-        <app-blog-post-card 
-          [post]="post" 
-          [expanded]="post.expanded ?? false"
-          (toggleExpanded)="toggleExpanded(i)">
-          <div [innerHTML]="post.content | markdown"></div>
-        </app-blog-post-card>
-      } @empty {
-        <div class="no-posts">
-          <mat-icon>article</mat-icon>
-          <h2>No posts yet</h2>
-          <p>Check back soon for new content!</p>
-        </div>
-      }
+  <div class="blog-posts">
+    @for (post of posts(); track post.id; let i = $index) {
+    <app-blog-post-card [post]="post" [expanded]="post.expanded ?? false" (toggleExpanded)="toggleExpanded(i)">
+      <div [innerHTML]="post.content | markdown"></div>
+      <div actions>
+        <button mat-raised-button color="primary" (click)="viewPost(post.id)">
+          Read Full Article
+          <mat-icon>arrow_forward</mat-icon>
+        </button>
+      </div>
+    </app-blog-post-card>
+    } @empty {
+    <div class="no-posts">
+      <mat-icon>article</mat-icon>
+      <h2>No posts yet</h2>
+      <p>Check back soon for new content!</p>
     </div>
+    }
+  </div>
   }
 </div>

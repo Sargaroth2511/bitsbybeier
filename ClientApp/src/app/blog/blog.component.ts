@@ -1,5 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
 import { CmsService } from '../services/cms.service';
 import { CmsContent } from '../models/cms.model';
 import { BlogPostCardComponent } from '../shared/components/blog-post-card.component';
@@ -17,6 +19,7 @@ import { MarkdownPipe } from '../shared/pipes/markdown.pipe';
   standalone: true,
   imports: [
     MatIconModule,
+    MatButtonModule,
     BlogPostCardComponent,
     LoadingSpinnerComponent,
     ErrorDisplayComponent,
@@ -28,7 +31,10 @@ export class BlogComponent implements OnInit {
   loading = signal(false);
   error = signal('');
 
-  constructor(private cmsService: CmsService) {}
+  constructor(
+    private cmsService: CmsService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.loadPosts();
@@ -63,5 +69,12 @@ export class BlogComponent implements OnInit {
       newPosts[index] = { ...newPosts[index], expanded: !newPosts[index].expanded };
       return newPosts;
     });
+  }
+
+  /**
+   * Navigate to the individual blog post.
+   */
+  viewPost(postId: number): void {
+    this.router.navigate(['/blog', postId]);
   }
 }

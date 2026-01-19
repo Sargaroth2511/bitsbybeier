@@ -14,6 +14,9 @@ export class MarkdownPipe implements PipeTransform {
   transform(value: string): SafeHtml {
     if (!value) return '';
     
+    // Convert literal \n to actual newlines first
+    value = value.replace(/\\n/g, '\n');
+    
     // Basic markdown to HTML conversion
     let html = value
       // Headers

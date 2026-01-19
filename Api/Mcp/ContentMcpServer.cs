@@ -9,23 +9,23 @@ namespace bitsbybeier.Api.Mcp;
 /// MCP Server for content management operations.
 /// Provides AI agents with the ability to create content items and manage images programmatically.
 /// 
-/// RECOMMENDED WORKFLOW FOR AI-GENERATED CONTENT WITH IMAGES:
-/// 1. LLM calls generate_image tool with descriptive prompt → receives image ID
-/// 2. Repeat step 1 for each image needed in the article
-/// 3. LLM creates content text with Markdown syntax using image IDs: ![alt text](https://bitsbybeier.de/api/images/{imageId})
-/// 4. LLM calls create_content with the content and comma-separated image IDs in imageIds parameter
+/// ✅ PRIMARY WORKFLOW - Use generate_image for ALL Image Generation:
+/// 1. Call generate_image(prompt="A chocolate cake with frosting") → Returns: "Image generated successfully. ID: 5"
+/// 2. Repeat for each image needed: generate_image(prompt="A bakery") → Returns: "ID: 6"
+/// 3. Create content with Markdown image syntax: ![Alt Text](https://bitsbybeier.de/api/images/5)
+/// 4. Call create_content with imageIds="5,6" to attach all images
 /// 
-/// EXAMPLE:
-/// Step 1: Call generate_image("A chocolate cake with frosting") → Returns ID: 5
-/// Step 2: Call generate_image("A bakery storefront") → Returns ID: 6
-/// Step 3: Create content: "# Guide\n\n![Cake](https://bitsbybeier.de/api/images/5)\n\n![Store](https://bitsbybeier.de/api/images/6)"
-/// Step 4: Call create_content with imageIds="5,6"
+/// COMPLETE EXAMPLE:
+/// User: "Create article about chocolate cake with images"
+/// You: Call generate_image(prompt="A delicious chocolate cake with chocolate frosting") → Get ID: 5
+/// You: Write content: "# Chocolate Cake\n\n![Chocolate Cake](https://bitsbybeier.de/api/images/5)\n\nThis cake..."
+/// You: Call create_content(title="Chocolate Cake", content=above, imageIds="5")
 /// 
-/// ALTERNATIVE WORKFLOW (for external images):
-/// 1. Generate image with external tool (DALL-E, Midjourney, etc.) - receives a temporary URL
-/// 2. Import image using import_image_from_url tool with the temporary URL (returns an image ID)
-/// 3. Insert images into content text using Markdown syntax: ![alt text](https://bitsbybeier.de/api/images/{imageId})
-/// 4. Attach images to content by providing comma-separated image IDs in the imageIds parameter
+/// IMPORTANT RULES:
+/// - Always use generate_image for image generation (NOT external DALL-E)
+/// - Image URLs MUST be: https://bitsbybeier.de/api/images/{ID}
+/// - Include newlines as \n in content parameter
+/// - List all image IDs in imageIds parameter (comma-separated)
 /// </summary>
 [McpServerToolType]
 public class ContentMcpTools
@@ -34,6 +34,7 @@ public class ContentMcpTools
     private readonly IImageService _imageService;
     private readonly IOpenAIImageService _openAIImageService;
     private readonly ILogger<ContentMcpTools> _logger;
+    private readonly IConfiguration _configuration;
 
     /// <summary>
     /// Initializes a new instance of the ContentMcpTools.
@@ -42,19 +43,37 @@ public class ContentMcpTools
     /// <param name="imageService">Image service for image operations.</param>
     /// <param name="openAIImageService">OpenAI image service for AI image generation.</param>
     /// <param name="logger">Logger instance.</param>
+    /// <param name="configuration">Configuration for reading base URL.</param>
     public ContentMcpTools(
         IContentService contentService, 
         IImageService imageService,
         IOpenAIImageService openAIImageService,
-        ILogger<ContentMcpTools> logger)
+        ILogger<ContentMcpTools> logger,
+        IConfiguration configuration)
     {
         _contentService = contentService;
         _imageService = imageService;
         _openAIImageService = openAIImageService;
         _logger = logger;
+        _configuration = configuration;
         
         _logger.LogInformation("=== ContentMcpTools instance created ===");
-        _logger.LogInformation("Available tools: create_content, upload_image, import_image_from_url, generate_image");
+        _logger.LogInformation("Tools should be available:");
+        _logger.LogInformation("  - create_content (CreateContentAsync)");
+        _logger.LogInformation("  - upload_image (UploadImageAsync)");
+        _logger.LogInformation("  - import_image_from_url (ImportImageFromUrlAsync)");
+        _logger.LogInformation("  - generate_image (GenerateImageAsync)");
+    }
+    
+    private string GetBaseUrl()
+    {
+        // In development, use relative URL for Angular proxy compatibility
+        var environment = _configuration["ASPNETCORE_ENVIRONMENT"] ?? "Production";
+        if (environment == "Development")
+        {
+            return ""; // Empty string = relative URL like /api/images/1
+        }
+        return "https://bitsbybeier.de";
     }
 
     /// <summary>
@@ -62,27 +81,30 @@ public class ContentMcpTools
     /// Use this to add articles, blog posts, or any text-based content.
     /// Content supports Markdown formatting, including links and references.
     /// 
-    /// CHATGPT: HOW TO ADD DALL-E IMAGES (COMPLETE WORKFLOW):
+    /// ⚠️ CHATGPT: IF USER REQUESTS IMAGES WITH THE ARTICLE:
+    /// YOU MUST CALL generate_image TOOL FIRST! DO NOT write placeholder text like [IMAGE_1: ...]!
     /// 
-    /// STEP 1: Generate image with DALL-E
-    ///   - You receive a URL like: https://oaidalleapiprodscus.blob.core.windows.net/private/.../img-xyz.png?se=...
+    /// COMPLETE WORKFLOW WITH IMAGES:
     /// 
-    /// STEP 2: Import the image using import_image_from_url tool
-    ///   - Call: import_image_from_url(imageUrl="https://oaidalleapiprodscus.blob.core.windows.net/...", description="Chocolate cake")
-    ///   - Response: "Image imported successfully. ID: 5"
-    ///   - ✅ This works! No CORS issues, no restrictions on DALL-E URLs
+    /// Example: User says "Create article about Viking god Tyr with 3 images"
     /// 
-    /// STEP 3: Create content with the image
-    ///   - In 'content' parameter, write: "Here is the cake: ![Chocolate Cake](https://bitsbybeier.de/api/images/5)"
-    ///   - In 'imageIds' parameter, provide: "5" (or "5,7,9" for multiple images)
-    ///   - The URL format MUST be: https://bitsbybeier.de/api/images/{ID from step 2}
-    ///   - Alt text (between [ ]) describes the image
+    /// STEP 1: Generate each image using generate_image tool
+    ///   - Call: generate_image(prompt="Stylized drawing of Viking god Tyr, one-armed, with spear and shield, runes in background, muted colors")
+    ///   - Response: "Image generated successfully. ID: 42"
+    ///   - Repeat for each image requested (call generate_image multiple times!)
+    ///   - Example results: ID: 42, ID: 43, ID: 44
     /// 
-    /// EXAMPLE COMPLETE FLOW:
-    ///   1. DALL-E gives you: https://oaidalleapiprodscus.blob.core.windows.net/.../cake.png
-    ///   2. Call import_image_from_url → Get back ID: 5
-    ///   3. Call create_ccontent with Markdown. CHATGPT: For DALL-E images: 1) Generate with DALL-E→get URL, 2) import_image_from_url(that URL)→get ID:5, 3) In content write: ![Cake](https://bitsbybeier.de/api/images/5), 4) Set imageIds='5'. DALL-E URLs fully supported in import_image_from_url!
-    ///   4. Done! Image is stored permanently and displayed in the article
+    /// STEP 2: Write article content including the images in Markdown format
+    ///   - Format: ![Description](https://bitsbybeier.de/api/images/{ID})
+    ///   - Example: "# Tyr\n\n![Tyr the God](https://bitsbybeier.de/api/images/42)\n\nTyr was a Norse god..."
+    ///   - Include all generated images in your content
+    /// 
+    /// STEP 3: Create content with imageIds parameter
+    ///   - Call create_content with imageIds="42,43,44" (comma-separated list of all IDs)
+    ///   - Content parameter contains the full article with Markdown image references
+    ///   - Done! Article with images is created
+    /// 
+    /// CRITICAL: Always use generate_image tool when images are requested. Never create placeholder text!
     /// </summary>
     /// <param name="author">Author name (required, max 200 characters).</param>
     /// <param name="title">Title of the content (required, max 500 characters).</param>
@@ -92,7 +114,7 @@ public class ContentMcpTools
     /// <param name="imageIds">Optional comma-separated image IDs to attach (e.g., "1,2,3").</param>
     /// <returns>A message indicating the content was created successfully with details.</returns>
     [McpServerTool(Name = "create_content")]
-    [Description("Creates a new content item with Markdown support. To add AI-generated images: 1) Generate image and get URL, 2) Import with import_image_from_url (get ID), 3) Insert in content text using ![alt](https://bitsbybeier.de/api/images/{ID}), 4) List all image IDs in imageIds parameter (comma-separated).")]
+    [Description("Creates blog article/content. ⚠️ For images: ALWAYS call generate_image FIRST (once per image)! Get IDs, then include as ![Alt](https://bitsbybeier.de/api/images/{ID}), set imageIds='5,6,7'. DO NOT write [IMAGE:...] placeholders - actually generate them with generate_image tool!")]
     public async Task<string> CreateContentAsync(
         [Description("Author name")] string author,
         [Description("Content title")] string title,
@@ -134,9 +156,13 @@ public class ContentMcpTools
             var imageInfo = imageIdList?.Count > 0 
                 ? $", Attached Images: {imageIdList.Count}" 
                 : "";
+            
+            var baseUrl = GetBaseUrl();
+            var viewUrl = draft 
+                ? $"{baseUrl}/drafts" 
+                : $"{baseUrl}/content";
                 
-            var result = $"Content created successfully. ID: {createdContent.Id}, Title: {createdContent.Title}, Draft: {createdContent.Draft}, Created: {createdContent.CreatedAt:yyyy-MM-dd HH:mm:ss} UTC{imageInfo}";
-            _logger.LogInformation("Content created via MCP with ID: {ContentId}", createdContent.Id);
+            var result = $"✅ Article created successfully!\n\nID: {createdContent.Id}\nTitle: {createdContent.Title}\nStatus: {(draft ? "Draft" : "Published")}\nCreated: {createdContent.CreatedAt:yyyy-MM-dd HH:mm:ss} UTC{imageInfo}\n\nThe article is ready and can be viewed at: {viewUrl}\n\nNext steps: {(draft ? "The article is saved as a draft. You can review it, edit if needed, and publish it from the CMS." : "The article is now live and publicly visible.")}";            _logger.LogInformation("Content created via MCP with ID: {ContentId}", createdContent.Id);
             
             return result;
         }
@@ -238,7 +264,8 @@ public class ContentMcpTools
 
             var image = await _imageService.ImportImageFromUrlAsync(imageUrl, fileName);
 
-            var result = $"Image imported successfully. ID: {image.Id}, Filename: {image.FileName}, Size: {image.FileSize} bytes, Type: {image.ContentType}. Use this ID when creating content to attach this image. In your content text, reference it as: ![{description ?? "image"}](https://bitsbybeier.de/api/images/{image.Id})";
+            var baseUrl = GetBaseUrl();
+            var result = $"Image imported successfully. ID: {image.Id}, Filename: {image.FileName}, Size: {image.FileSize} bytes, Type: {image.ContentType}. Use this ID when creating content to attach this image. In your content text, reference it as: ![{description ?? "image"}]({baseUrl}/api/images/{image.Id})";
             _logger.LogInformation("Image imported from URL via MCP with ID: {ImageId}", image.Id);
             
             return result;
@@ -257,29 +284,38 @@ public class ContentMcpTools
     
     /// <summary>
     /// Generates an image using OpenAI's DALL-E API and automatically saves it to the server.
-    /// This is the RECOMMENDED way to add AI-generated images to content.
+    /// ✅ THIS IS THE PRIMARY TOOL FOR IMAGE GENERATION - Use this instead of external DALL-E!
     /// 
-    /// NEW WORKFLOW FOR AI-GENERATED CONTENT WITH IMAGES:
-    /// 1. LLM receives request to create article with images
-    /// 2. LLM calls THIS TOOL (generate_image) with descriptive prompts → Returns image IDs
-    /// 3. LLM creates article content with Markdown syntax using those IDs: ![alt](https://bitsbybeier.de/api/images/{ID})
-    /// 4. LLM calls create_content with the markdown content and imageIds parameter
+    /// CHATGPT: ALWAYS USE THIS TOOL FOR IMAGE GENERATION
+    /// DO NOT generate images externally - this tool handles everything automatically.
     /// 
-    /// EXAMPLE:
-    /// Step 1: Call generate_image(prompt="A delicious chocolate cake with frosting") → Returns "Image generated successfully. ID: 5"
-    /// Step 2: Call generate_image(prompt="A bakery storefront") → Returns "Image generated successfully. ID: 6"
-    /// Step 3: Create article with content: "# Bakery Guide\n\n![Chocolate Cake](https://bitsbybeier.de/api/images/5)\n\n![Our Store](https://bitsbybeier.de/api/images/6)"
-    /// Step 4: Call create_content with imageIds="5,6" to attach images
+    /// SIMPLE 2-STEP WORKFLOW:
+    /// Step 1: Call generate_image(prompt="A chocolate cake with frosting")
+    ///         Returns: "Image generated successfully. ID: 5"
     /// 
-    /// BENEFITS:
-    /// - No need to manually import from DALL-E URLs
-    /// - Images are automatically saved and optimized
-    /// - Simpler workflow - one tool call per image
-    /// - Consistent naming and organization
+    /// Step 2: Use ID in create_content markdown:
+    ///         content="# Cake Recipe\n\n![Chocolate Cake](https://bitsbybeier.de/api/images/5)\n\nDelicious!"
+    ///         imageIds="5"
     /// 
-    /// CONFIGURATION:
-    /// Requires OPENAI_API_KEY environment variable to be set.
-    /// Default model: dall-e-3, size: 1024x1024, quality: standard.
+    /// MULTIPLE IMAGES EXAMPLE:
+    /// generate_image("chocolate cake") → ID: 5
+    /// generate_image("bakery interior") → ID: 6
+    /// create_content with content="![Cake](https://bitsbybeier.de/api/images/5)\n\n![Store](https://bitsbybeier.de/api/images/6)" and imageIds="5,6"
+    /// 
+    /// IMAGE URL FORMAT (REQUIRED):
+    /// - Production: https://bitsbybeier.de/api/images/{ID}
+    /// - Always use the ID returned by this tool
+    /// 
+    /// WHAT HAPPENS AUTOMATICALLY:
+    /// - Calls OpenAI DALL-E API
+    /// - Downloads generated image
+    /// - Saves to database with optimization
+    /// - Returns image ID for immediate use
+    /// 
+    /// DEFAULT SETTINGS:
+    /// - Model: dall-e-3 (best quality)
+    /// - Size: 1024x1024 (square)
+    /// - Quality: standard (fast and good)
     /// </summary>
     /// <param name="prompt">Detailed description of the image to generate (be specific for best results).</param>
     /// <param name="size">Optional image size: "1024x1024" (square), "1792x1024" (landscape), or "1024x1792" (portrait). Default: 1024x1024.</param>
@@ -287,12 +323,12 @@ public class ContentMcpTools
     /// <param name="model">Optional model: "dall-e-3" (better quality) or "dall-e-2" (faster). Default: dall-e-3.</param>
     /// <returns>A message with the image ID that can be used when creating content.</returns>
     [McpServerTool(Name = "generate_image")]
-    [Description("✅ RECOMMENDED: Generates an image using OpenAI DALL-E and auto-saves to server. Returns image ID for use in content. CHATGPT: Use this for all image generation! Step 1: Call this tool with prompt, Step 2: Get back image ID, Step 3: Use ID in create_content markdown.")]
+    [Description("🎨 AI IMAGE GENERATOR: Creates images using AI (OpenAI DALL-E or Stability AI). Saves automatically, returns ID. When user requests images, call this tool MULTIPLE TIMES (once per image). DO NOT write placeholders! Example workflow: User wants 3 images→Call generate_image 3x→Get IDs 5,6,7→Include in article: ![Image](https://bitsbybeier.de/api/images/5). Prompt examples: 'A Viking god Tyr with one arm, stylized drawing, muted colors'")]
     public async Task<string> GenerateImageAsync(
         [Description("Detailed text description of the image to generate (e.g., 'A modern minimalist bakery interior with wooden tables')")] string prompt,
-        [Description("Optional size: '1024x1024' (square), '1792x1024' (landscape), or '1024x1792' (portrait)")] string? size = null,
-        [Description("Optional quality: 'standard' (default) or 'hd'")] string? quality = null,
-        [Description("Optional model: 'dall-e-3' (default) or 'dall-e-2'")] string? model = null)
+        [Description("Size/aspect ratio. OpenAI: '1024x1024' (square), '1792x1024' (landscape), '1024x1792' (portrait). Stability: '1:1', '16:9', '9:16', '21:9', '2:3', '3:2', '4:5', '5:4'")] string? size = null,
+        [Description("Quality: 'standard' (default, fast) or 'hd' (OpenAI only, higher detail). For Stability, use 'photographic', 'cinematic', 'anime', '3d-model', etc.")] string? quality = null,
+        [Description("Model: 'dall-e-3' (best), 'dall-e-2' (OpenAI) OR 'core' (fast), 'ultra' (photorealistic), 'sd3.5-large', 'sd3.5-medium', 'sd3.5-large-turbo' (Stability AI). Provider auto-selected based on model.")] string? model = null)
     {
         _logger.LogInformation("=== generate_image called via MCP ===");
         _logger.LogInformation("Parameters - Prompt: {Prompt}, Size: {Size}, Quality: {Quality}, Model: {Model}", 
@@ -304,7 +340,8 @@ public class ContentMcpTools
 
             var image = await _openAIImageService.GenerateImageAsync(prompt, size, quality, model);
 
-            var result = $"Image generated successfully. ID: {image.Id}, Filename: {image.FileName}, Size: {image.FileSize} bytes, Type: {image.ContentType}. Use this ID when creating content to attach this image. In your content text, reference it as: ![Generated image](https://bitsbybeier.de/api/images/{image.Id})";
+            var baseUrl = GetBaseUrl();
+            var result = $"✅ Image generated and saved successfully!\n\nImage ID: {image.Id}\nFilename: {image.FileName}\nSize: {image.FileSize} bytes\n\nNext step: Use this ID when creating the article. Include in the content markdown as:\n![Description]({baseUrl}/api/images/{image.Id})\n\nAnd pass imageIds='{image.Id}' parameter to create_content.";
             _logger.LogInformation("Image generated and saved via MCP with ID: {ImageId}", image.Id);
             
             return result;
