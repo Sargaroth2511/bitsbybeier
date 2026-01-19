@@ -14,8 +14,8 @@
 
   @if (!loading() && !error()) {
   <div class="blog-posts">
-    @for (post of posts(); track post.id; let i = $index) {
-    <app-blog-post-card [post]="post" [expanded]="post.expanded ?? false" (toggleExpanded)="toggleExpanded(i)">
+    @for (post of posts(); track post.id) {
+    <app-blog-post-card [post]="post" [showToggle]="false">
       <div [innerHTML]="post.content | markdown"></div>
       <div actions>
         <button mat-raised-button color="primary" (click)="viewPost(post.id)">

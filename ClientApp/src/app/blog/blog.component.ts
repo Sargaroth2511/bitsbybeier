@@ -27,7 +27,7 @@ import { MarkdownPipe } from '../shared/pipes/markdown.pipe';
   ]
 })
 export class BlogComponent implements OnInit {
-  posts = signal<(CmsContent & { expanded?: boolean })[]>([]);
+  posts = signal<CmsContent[]>([]);
   loading = signal(false);
   error = signal('');
 
@@ -49,7 +49,7 @@ export class BlogComponent implements OnInit {
     
     this.cmsService.getPublicContent().subscribe({
       next: (data) => {
-        this.posts.set(data.map(post => ({ ...post, expanded: false })));
+        this.posts.set(data);
         this.loading.set(false);
       },
       error: (error) => {
@@ -57,17 +57,6 @@ export class BlogComponent implements OnInit {
         this.loading.set(false);
         console.error('Error loading blog posts', error);
       }
-    });
-  }
-
-  /**
-   * Toggles the expanded state of a post.
-   */
-  toggleExpanded(index: number): void {
-    this.posts.update(posts => {
-      const newPosts = [...posts];
-      newPosts[index] = { ...newPosts[index], expanded: !newPosts[index].expanded };
-      return newPosts;
     });
   }
 
