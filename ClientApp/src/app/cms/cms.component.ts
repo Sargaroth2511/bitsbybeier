@@ -237,16 +237,19 @@ export class CmsComponent implements OnInit {
     // Update URL to include content ID
     this.router.navigate(['/cms', content.id], { replaceUrl: true });
     
+    // Convert literal \n to actual newlines
+    const contentText = content.content.replace(/\\n/g, '\n');
+    
     this.contentForm.patchValue({
       author: content.author,
       title: content.title,
       subtitle: content.subtitle || '',
-      content: content.content,
+      content: contentText,
       draft: content.draft
     });
     
     // Update content signal for preview
-    this.contentText.set(content.content);
+    this.contentText.set(contentText);
     
     // Parse markdown to find image references
     const imageRegex = /!\[([^\]]*)\]\(\/api\/images\/(\d+)\)/g;
@@ -331,6 +334,9 @@ export class CmsComponent implements OnInit {
    * Formats markdown content to HTML.
    */
   private formatMarkdown(content: string): string {
+    // First, convert literal \n to actual newlines
+    content = content.replace(/\\n/g, '\n');
+    
     // Handle images first - convert to img tags
     let html = content.replace(/!\[([^\]]*)\]\(([^\)]+)\)/g, (match, alt, src) => {
       return `<img src="${src}" alt="${alt}" class="content-image" style="max-width: 100%; height: auto; margin: 1rem 0; display: block;" />`;

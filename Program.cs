@@ -73,6 +73,10 @@ builder.Services.Configure<GoogleAuthOptions>(
     builder.Configuration.GetSection(GoogleAuthOptions.SectionName));
 builder.Services.Configure<OpenAIOptions>(
     builder.Configuration.GetSection(OpenAIOptions.SectionName));
+builder.Services.Configure<StabilityAIOptions>(
+    builder.Configuration.GetSection(StabilityAIOptions.SectionName));
+builder.Services.Configure<ImageGenerationOptions>(
+    builder.Configuration.GetSection(ImageGenerationOptions.SectionName));
 
 // Configure Database
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
@@ -91,7 +95,13 @@ builder.Services.AddScoped<IContentService, ContentService>();
 builder.Services.AddScoped<IOAuthService, OAuthService>();
 builder.Services.AddScoped<IUrlValidationService, UrlValidationService>();
 builder.Services.AddScoped<IImageService, ImageService>();
-builder.Services.AddScoped<IOpenAIImageService, OpenAIImageService>();
+
+// Register image generation providers
+builder.Services.AddScoped<IImageGenerationProvider, OpenAIImageProvider>();
+builder.Services.AddScoped<IImageGenerationProvider, StabilityAIImageProvider>();
+
+// Register unified image generation service (selects provider based on configuration)
+builder.Services.AddScoped<IOpenAIImageService, ImageGenerationService>();
 
 // Add HttpClient for image URL downloads
 builder.Services.AddHttpClient();
