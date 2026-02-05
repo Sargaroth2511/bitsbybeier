@@ -9,26 +9,30 @@ namespace bitsbybeier.Api.Mcp;
 /// MCP Server for content management operations.
 /// Provides AI agents with the ability to create content items and manage images programmatically.
 /// 
-/// IMAGE WORKFLOW FOR AI-GENERATED CONTENT:
-/// 1. Generate image with AI tool (DALL-E, Midjourney, etc.) - receives a temporary URL
+/// RECOMMENDED WORKFLOW FOR AI-GENERATED CONTENT WITH IMAGES:
+/// 1. LLM calls generate_image tool with descriptive prompt → receives image ID
+/// 2. Repeat step 1 for each image needed in the article
+/// 3. LLM creates content text with Markdown syntax using image IDs: ![alt text](https://bitsbybeier.de/api/images/{imageId})
+/// 4. LLM calls create_content with the content and comma-separated image IDs in imageIds parameter
+/// 
+/// EXAMPLE:
+/// Step 1: Call generate_image("A chocolate cake with frosting") → Returns ID: 5
+/// Step 2: Call generate_image("A bakery storefront") → Returns ID: 6
+/// Step 3: Create content: "# Guide\n\n![Cake](https://bitsbybeier.de/api/images/5)\n\n![Store](https://bitsbybeier.de/api/images/6)"
+/// Step 4: Call create_content with imageIds="5,6"
+/// 
+/// ALTERNATIVE WORKFLOW (for external images):
+/// 1. Generate image with external tool (DALL-E, Midjourney, etc.) - receives a temporary URL
 /// 2. Import image using import_image_from_url tool with the temporary URL (returns an image ID)
 /// 3. Insert images into content text using Markdown syntax: ![alt text](https://bitsbybeier.de/api/images/{imageId})
 /// 4. Attach images to content by providing comma-separated image IDs in the imageIds parameter
-/// 
-/// EXAMPLE:
-/// Step 1: AI generates image → returns URL: "https://oaidalleapiprodscus.blob.core.windows.net/..."
-/// Step 2: Call import_image_from_url with that URL → returns "Image imported successfully. ID: 5"
-/// Step 3: In content text, write: "Here is the cake: ![Delicious Chocolate Cake](https://bitsbybeier.de/api/images/5)"
-/// Step 4: Call create_content with imageIds="5" to attach the image to the content
-/// 
-/// The server downloads the image from the URL, validates it, and stores it in the database.
-/// The Markdown image syntax will be rendered as an HTML img tag in the final output.
 /// </summary>
 [McpServerToolType]
 public class ContentMcpTools
 {
     private readonly IContentService _contentService;
     private readonly IImageService _imageService;
+    private readonly IOpenAIImageService _openAIImageService;
     private readonly ILogger<ContentMcpTools> _logger;
 
     /// <summary>
@@ -36,18 +40,21 @@ public class ContentMcpTools
     /// </summary>
     /// <param name="contentService">Content service for content operations.</param>
     /// <param name="imageService">Image service for image operations.</param>
+    /// <param name="openAIImageService">OpenAI image service for AI image generation.</param>
     /// <param name="logger">Logger instance.</param>
     public ContentMcpTools(
         IContentService contentService, 
         IImageService imageService,
+        IOpenAIImageService openAIImageService,
         ILogger<ContentMcpTools> logger)
     {
         _contentService = contentService;
         _imageService = imageService;
+        _openAIImageService = openAIImageService;
         _logger = logger;
         
         _logger.LogInformation("=== ContentMcpTools instance created ===");
-        _logger.LogInformation("Available tools: create_content, upload_image, import_image_from_url");
+        _logger.LogInformation("Available tools: create_content, upload_image, import_image_from_url, generate_image");
     }
 
     /// <summary>
@@ -245,6 +252,72 @@ public class ContentMcpTools
         {
             _logger.LogError(ex, "Unexpected error importing image from URL via MCP");
             throw new InvalidOperationException($"Unexpected error importing image: {ex.Message}", ex);
+        }
+    }
+    
+    /// <summary>
+    /// Generates an image using OpenAI's DALL-E API and automatically saves it to the server.
+    /// This is the RECOMMENDED way to add AI-generated images to content.
+    /// 
+    /// NEW WORKFLOW FOR AI-GENERATED CONTENT WITH IMAGES:
+    /// 1. LLM receives request to create article with images
+    /// 2. LLM calls THIS TOOL (generate_image) with descriptive prompts → Returns image IDs
+    /// 3. LLM creates article content with Markdown syntax using those IDs: ![alt](https://bitsbybeier.de/api/images/{ID})
+    /// 4. LLM calls create_content with the markdown content and imageIds parameter
+    /// 
+    /// EXAMPLE:
+    /// Step 1: Call generate_image(prompt="A delicious chocolate cake with frosting") → Returns "Image generated successfully. ID: 5"
+    /// Step 2: Call generate_image(prompt="A bakery storefront") → Returns "Image generated successfully. ID: 6"
+    /// Step 3: Create article with content: "# Bakery Guide\n\n![Chocolate Cake](https://bitsbybeier.de/api/images/5)\n\n![Our Store](https://bitsbybeier.de/api/images/6)"
+    /// Step 4: Call create_content with imageIds="5,6" to attach images
+    /// 
+    /// BENEFITS:
+    /// - No need to manually import from DALL-E URLs
+    /// - Images are automatically saved and optimized
+    /// - Simpler workflow - one tool call per image
+    /// - Consistent naming and organization
+    /// 
+    /// CONFIGURATION:
+    /// Requires OPENAI_API_KEY environment variable to be set.
+    /// Default model: dall-e-3, size: 1024x1024, quality: standard.
+    /// </summary>
+    /// <param name="prompt">Detailed description of the image to generate (be specific for best results).</param>
+    /// <param name="size">Optional image size: "1024x1024" (square), "1792x1024" (landscape), or "1024x1792" (portrait). Default: 1024x1024.</param>
+    /// <param name="quality">Optional quality: "standard" (faster, cheaper) or "hd" (higher detail). Default: standard.</param>
+    /// <param name="model">Optional model: "dall-e-3" (better quality) or "dall-e-2" (faster). Default: dall-e-3.</param>
+    /// <returns>A message with the image ID that can be used when creating content.</returns>
+    [McpServerTool(Name = "generate_image")]
+    [Description("✅ RECOMMENDED: Generates an image using OpenAI DALL-E and auto-saves to server. Returns image ID for use in content. CHATGPT: Use this for all image generation! Step 1: Call this tool with prompt, Step 2: Get back image ID, Step 3: Use ID in create_content markdown.")]
+    public async Task<string> GenerateImageAsync(
+        [Description("Detailed text description of the image to generate (e.g., 'A modern minimalist bakery interior with wooden tables')")] string prompt,
+        [Description("Optional size: '1024x1024' (square), '1792x1024' (landscape), or '1024x1792' (portrait)")] string? size = null,
+        [Description("Optional quality: 'standard' (default) or 'hd'")] string? quality = null,
+        [Description("Optional model: 'dall-e-3' (default) or 'dall-e-2'")] string? model = null)
+    {
+        _logger.LogInformation("=== generate_image called via MCP ===");
+        _logger.LogInformation("Parameters - Prompt: {Prompt}, Size: {Size}, Quality: {Quality}, Model: {Model}", 
+            prompt, size, quality, model);
+        
+        try
+        {
+            _logger.LogInformation("Generating image via OpenAI DALL-E: {Prompt}", prompt);
+
+            var image = await _openAIImageService.GenerateImageAsync(prompt, size, quality, model);
+
+            var result = $"Image generated successfully. ID: {image.Id}, Filename: {image.FileName}, Size: {image.FileSize} bytes, Type: {image.ContentType}. Use this ID when creating content to attach this image. In your content text, reference it as: ![Generated image](https://bitsbybeier.de/api/images/{image.Id})";
+            _logger.LogInformation("Image generated and saved via MCP with ID: {ImageId}", image.Id);
+            
+            return result;
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogError(ex, "Error generating image via MCP");
+            throw new InvalidOperationException($"Error generating image: {ex.Message}", ex);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error generating image via MCP");
+            throw new InvalidOperationException($"Unexpected error generating image: {ex.Message}", ex);
         }
     }
 }
